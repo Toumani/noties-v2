@@ -18,7 +18,7 @@ const pages = [
   {
     title: 'Feed',
     icon: flash,
-    url: '/tabs/feed',
+    url: '/tabs/notes',
   },
   {
     title: 'Lists',

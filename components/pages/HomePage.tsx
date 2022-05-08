@@ -8,7 +8,7 @@ import {IonContent, IonHeader, IonToolbar, IonPage, IonTitle} from "@ionic/react
 import { AppContext } from '../../store/State';
 import Card from '../ui/Card';
 
-const NoteCard = ({ title, categoryName, categoryColor, nbElementDone, nbElement, author }) => {
+const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
   const nbElementRemaining = nbElement - nbElementDone;
   let message: string;
   if (nbElementRemaining == 0)
@@ -17,9 +17,12 @@ const NoteCard = ({ title, categoryName, categoryColor, nbElementDone, nbElement
     message = '1 élément restant';
   else
     message = nbElementRemaining + ' éléments restants';
-  console.log(categoryColor);
+
   return (
-    <Card className="mx-auto my-4">
+    <Card
+      className="mx-auto my-4 cursor-pointer"
+      onClick={() => history.push(`/tabs/notes/${id}`)}
+    >
       <div className="px-4 py-4 bg-white rounded-b-xl dark:bg-gray-900">
         <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4>
         <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{title}</h2>
@@ -52,12 +55,15 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
       <IonContent className="ion-padding" fullscreen>
         { state.notes && state.notes.map(note => (
           <NoteCard
+            key={note.id}
+            id={note.id}
             title={note.title}
             categoryName={note.category.name}
             categoryColor={note.category.color}
             nbElementDone={note.nbElementDone}
             nbElement={note.nbElement}
             author={note.author}
+            history={history}
           />
         ))}
       </IonContent>

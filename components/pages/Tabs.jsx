@@ -3,6 +3,7 @@ import { IonRouterOutlet, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } 
 import { cog, flash, list } from 'ionicons/icons';
 
 import Home from './HomePage';
+import Note from './NotePage';
 import Lists from './Lists';
 import ListDetail from './ListDetail';
 import Settings from './Settings';
@@ -12,10 +13,11 @@ const Tabs = () => {
     <IonTabs>
       <IonRouterOutlet>
         <Route path="/tabs/notes" component={Home} exact={true} />
+        <Route path="/tabs/notes/:noteId" component={Note} exact={true} />
         <Route path="/tabs/lists" component={Lists} exact={true} />
         <Route path="/tabs/lists/:listId" component={ListDetail} exact={true} />
         <Route path="/tabs/settings" component={Settings} exact={true} />
-        <Route path="/tabs" render={() => <Redirect to="/tabs/feed" />} exact={true} />
+        <Route path="/tabs" render={() => <Redirect to="/tabs/notes" />} exact={true} />
       </IonRouterOutlet>
       <IonTabBar slot="bottom">
         <IonTabButton tab="tab1" href="/tabs/notes">
