@@ -56,6 +56,24 @@ const initialState = {
         { title: 'Guitare 🎸', index: 6, done: true },
       ]
     },
+    {
+      id: 4,
+      title: 'Marché express avril 2022',
+      category: { name: 'Courses 🛒', color: '#12bcd5' },
+      nbElementDone: 2,
+      nbElement: 3,
+      author: 'Kenza',
+      tasks: [
+        { title: 'Tomates 🍅', index: 0, done: false },
+        { title: 'Bananes 🍌', index: 1, done: true },
+        { title: 'Pâtes 🍝', index: 9, done: true },
+      ]
+    }
+  ],
+  categories: [
+    { id: 1, name: 'Courses 🛒', color: '#12bcd5' },
+    { id: 2, name: 'Shopping 🛍️', color: '#a32b1c' },
+    { id: 3, name: 'Épargne 💰', color: '#5ba65a' },
   ]
 }
 

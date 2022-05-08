@@ -1,12 +1,23 @@
-import React, {useContext} from "react";
+import React, {useContext, useState} from "react";
 import {RouteComponentProps} from "react-router";
 
 import Image from "next/image";
 
-import {IonContent, IonHeader, IonToolbar, IonPage, IonTitle} from "@ionic/react";
+import {
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonPage,
+  IonTitle,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption
+} from "@ionic/react";
 
 import { AppContext } from '../../store/State';
 import Card from '../ui/Card';
+import {add} from "ionicons/icons";
 
 const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
   const nbElementRemaining = nbElement - nbElementDone;
@@ -44,6 +55,9 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
 
 const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state } = useContext(AppContext);
+  const [ isModalOpen, setModalOpen ] = useState(false);
+  const [ newNoteTitle, setNewNoteTitle ] = useState('');
+  const [ newNoteCategoryName, setNewNoteCaregoryName ] = useState('');
 
   return (
     <IonPage>
@@ -52,7 +66,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           <IonTitle>Notes</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding" fullscreen>
+      <IonContent className="ion-padding">
         { state.notes && state.notes.map(note => (
           <NoteCard
             key={note.id}
@@ -66,6 +80,42 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             history={history}
           />
         ))}
+        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+          <IonFabButton onClick={() => setModalOpen(true)}>
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
+        <IonModal
+          isOpen={isModalOpen}
+          onDidDismiss={() => setModalOpen(false)}
+        >
+          <div className="flex flex-col justify-start">
+            <h3 className="mx-4 mt-4 text-2xl font-bold dark:text-gray-50">
+              Nouvelle note
+            </h3>
+            <IonItem>
+              <IonLabel position="stacked">Titre</IonLabel>
+              <IonInput value={newNoteTitle} onIonChange={e => setNewNoteTitle(e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Catégorie</IonLabel>
+              <IonSelect
+                value={newNoteCategoryName}
+                okText="OK"
+                cancelText="Fermer"
+                onIonChange={e => setNewNoteCaregoryName(e.detail.value)}
+              >
+                { state.categories.map(category => (
+                  <IonSelectOption key={category.id} value={category.name}>{ category.name }</IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <div className="flex flex-col mt-2">
+              <IonButton onClick={() => setModalOpen(false)}>Créer</IonButton>
+              <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
+            </div>
+          </div>
+        </IonModal>
       </IonContent>
     </IonPage>
   )

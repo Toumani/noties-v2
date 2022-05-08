@@ -98,7 +98,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match }) => {
         <IonList>
           {note.tasks.map((task) => <TaskView task={task} edit={edit} />)}
         </IonList>
-        <IonFab vertical="bottom" horizontal="end">
+        <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setAlertOpen(true)}>
             <IonIcon icon={add} />
           </IonFabButton>
