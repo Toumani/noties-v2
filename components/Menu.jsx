@@ -21,9 +21,9 @@ const pages = [
     url: '/tabs/notes',
   },
   {
-    title: 'Lists',
+    title: 'Catégories',
     icon: list,
-    url: '/tabs/lists',
+    url: '/tabs/categories',
   },
   {
     title: 'Settings',

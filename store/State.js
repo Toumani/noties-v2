@@ -8,6 +8,7 @@ const initialState = {
     {
       id: 1,
       title: 'Marché express mai 2022',
+      categoryId: 1,
       category: { name: 'Courses 🛒', color: '#12bcd5' },
       nbElementDone: 4,
       nbElement: 10,
@@ -28,6 +29,7 @@ const initialState = {
     {
       id: 2,
       title: 'Épargne mensuelle',
+      categoryId: 3,
       category: { name: 'Épargne 💰', color: '#5ba65a' },
       nbElementDone: 4,
       nbElement: 4,
@@ -42,6 +44,7 @@ const initialState = {
     {
       id: 3,
       title: 'Course Shein',
+      categoryId: 2,
       category: { name: 'Shopping 🛍️', color: '#a32b1c' },
       nbElementDone: 3,
       nbElement: 7,
@@ -59,7 +62,8 @@ const initialState = {
     {
       id: 4,
       title: 'Marché express avril 2022',
-      category: { name: 'Courses 🛒', color: '#12bcd5' },
+      categoryId: 1,
+      category: { name: 'Courses 🛒', color: '#12bcd5' }, // TODO remove redundancy
       nbElementDone: 2,
       nbElement: 3,
       author: 'Kenza',
@@ -74,6 +78,7 @@ const initialState = {
     { id: 1, name: 'Courses 🛒', color: '#12bcd5' },
     { id: 2, name: 'Shopping 🛍️', color: '#a32b1c' },
     { id: 3, name: 'Épargne 💰', color: '#5ba65a' },
+    { id: 4, name: 'Sorties ✈️', color: '#c67ade' },
   ]
 }
 

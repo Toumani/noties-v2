@@ -4,7 +4,7 @@ import { cog, flash, list } from 'ionicons/icons';
 
 import Home from './HomePage';
 import Note from './NotePage';
-import Lists from './Lists';
+import CategoryPage from './CategoryPage';
 import ListDetail from './ListDetail';
 import Settings from './Settings';
 
@@ -14,7 +14,7 @@ const Tabs = () => {
       <IonRouterOutlet>
         <Route path="/tabs/notes" component={Home} exact={true} />
         <Route path="/tabs/notes/:noteId" component={Note} exact={true} />
-        <Route path="/tabs/lists" component={Lists} exact={true} />
+        <Route path="/tabs/categories" component={CategoryPage} exact={true} />
         <Route path="/tabs/lists/:listId" component={ListDetail} exact={true} />
         <Route path="/tabs/settings" component={Settings} exact={true} />
         <Route path="/tabs" render={() => <Redirect to="/tabs/notes" />} exact={true} />
@@ -24,9 +24,9 @@ const Tabs = () => {
           <IonIcon icon={flash} />
           <IonLabel>Notes</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="tab2" href="/tabs/lists">
+        <IonTabButton tab="tab2" href="/tabs/categories">
           <IonIcon icon={list} />
-          <IonLabel>Lists</IonLabel>
+          <IonLabel>Catégories</IonLabel>
         </IonTabButton>
         <IonTabButton tab="tab3" href="/tabs/settings">
           <IonIcon icon={cog} />
