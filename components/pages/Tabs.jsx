@@ -6,7 +6,7 @@ import Home from './HomePage';
 import Note from './NotePage';
 import CategoryPage from './CategoryPage';
 import ListDetail from './ListDetail';
-import Settings from './Settings';
+import SettingsPage from './SettingsPage';
 
 const Tabs = () => {
   return (
@@ -16,7 +16,7 @@ const Tabs = () => {
         <Route path="/tabs/notes/:noteId" component={Note} exact={true} />
         <Route path="/tabs/categories" component={CategoryPage} exact={true} />
         <Route path="/tabs/lists/:listId" component={ListDetail} exact={true} />
-        <Route path="/tabs/settings" component={Settings} exact={true} />
+        <Route path="/tabs/settings" component={SettingsPage} exact={true} />
         <Route path="/tabs" render={() => <Redirect to="/tabs/notes" />} exact={true} />
       </IonRouterOutlet>
       <IonTabBar slot="bottom">
@@ -30,7 +30,7 @@ const Tabs = () => {
         </IonTabButton>
         <IonTabButton tab="tab3" href="/tabs/settings">
           <IonIcon icon={cog} />
-          <IonLabel>Settings</IonLabel>
+          <IonLabel>Paramètres</IonLabel>
         </IonTabButton>
       </IonTabBar>
     </IonTabs>

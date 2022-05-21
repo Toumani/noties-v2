@@ -4,6 +4,9 @@ let AppContext = createContext();
 
 const initialState = {
   // mock
+  user: {
+    name: 'Kenza'
+  },
   notes: [
     {
       id: 1,

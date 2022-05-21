@@ -44,7 +44,7 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
         <p className="sm:text-sm text-s text-gray-500 mr-1 my-3 dark:text-gray-400">{message}</p>
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 relative">
-            <Image layout='fill' src={`/img/${author}.jpg`} className="rounded-full" alt=""/>
+            <Image layout='fill' src={`/img/${author}.jpg`} className="rounded-full" alt={author}/>
           </div>
           <h3 className="text-gray-500 dark:text-gray-200 m-l-8 text-sm font-medium">{author}</h3>
         </div>

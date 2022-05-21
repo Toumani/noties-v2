@@ -26,7 +26,7 @@ const pages = [
     url: '/tabs/categories',
   },
   {
-    title: 'Settings',
+    title: 'Paramètres',
     icon: cog,
     url: '/tabs/settings',
   },
