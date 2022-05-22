@@ -8,9 +8,9 @@ import {
   IonTitle,
   IonContent,
   IonList,
-  IonToggle,
-  IonLabel,
+  IonLabel, IonCheckbox, IonItemDivider, IonIcon, IonButton,
 } from '@ionic/react';
+import { logOut } from 'ionicons/icons';
 
 import { AppContext } from '../../store/State';
 
@@ -90,22 +90,43 @@ const SettingsPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <div className="relative w-32 h-32 m-auto">
-          <Image className="rounded-full" layout='fill' src={`/img/${state.user.name}.jpg`} alt={state.user.name}/>
-        </div>
-        <div className="flex flex-col" style={{ minHeight: 'calc(100% - 7rem)', transform: 'translateY(-3rem)' }}>
-          <div className="flex" style={{ height: '63px' }}>
-            <div className="flex-grow h-full rounded-tl-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) -1px -5px 10px'}}></div>
-            <AvatarHolderSvg />
-            <div className="flex-grow h-full rounded-tr-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) 1px -5px 10px'}}></div>
+        <div className="w-full h-full p-4" slot="fixed">
+          <div className="relative w-32 h-32 m-auto">
+            <Image className="rounded-full" layout='fill' src={`/img/${state.user.name}.jpg`} alt={state.user.name}/>
           </div>
-          <div className="flex-grow py-4 rounded-b-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) 0px 10px 10px'}}>
-            <IonList>
-              <IonItem>
-                <IonLabel>Enable Notifications</IonLabel>
-                <IonToggle />
-              </IonItem>
-            </IonList>
+          <div className="flex flex-col" style={{ minHeight: 'calc(100% - 7rem)', transform: 'translateY(-3rem)' }}>
+            <div className="flex" style={{ height: '63px' }}>
+              <div className="flex-grow h-full rounded-tl-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) -1px -5px 10px'}}></div>
+              <AvatarHolderSvg />
+              <div className="flex-grow h-full rounded-tr-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) 1px -5px 10px'}}></div>
+            </div>
+            <div className="flex flex-col justify-between flex-grow py-4 rounded-b-2xl" style={{ boxShadow: 'rgb(204 204 204 / 50%) 0px 10px 10px'}}>
+              <IonList>
+                <IonItemDivider>
+                  <IonLabel>
+                    Profile
+                  </IonLabel>
+                </IonItemDivider>
+                <IonItem button detail={false}>
+                  <IonLabel>Changer la photo de profil</IonLabel>
+                </IonItem>
+                <IonItemDivider>
+                  <IonLabel>
+                    Notes
+                  </IonLabel>
+                </IonItemDivider>
+                <IonItem>
+                  <IonLabel>Trier par dernière modification</IonLabel>
+                  <IonCheckbox />
+                </IonItem>
+              </IonList>
+              <div className="flex flex-col px-2">
+                  <IonButton color="danger">
+                    Déconnexion
+                    <IonIcon slot="end" icon={logOut}></IonIcon>
+                  </IonButton>
+              </div>
+            </div>
           </div>
         </div>
       </IonContent>

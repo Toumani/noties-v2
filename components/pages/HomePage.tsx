@@ -57,7 +57,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state } = useContext(AppContext);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
-  const [ newNoteCategoryName, setNewNoteCaregoryName ] = useState('');
+  const [ newNoteCategoryName, setNewNoteCategoryName ] = useState('');
 
   return (
     <IonPage>
@@ -103,7 +103,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
                 value={newNoteCategoryName}
                 okText="OK"
                 cancelText="Fermer"
-                onIonChange={e => setNewNoteCaregoryName(e.detail.value)}
+                onIonChange={e => setNewNoteCategoryName(e.detail.value)}
               >
                 { state.categories.map(category => (
                   <IonSelectOption key={category.id} value={category.name}>{ category.name }</IonSelectOption>
