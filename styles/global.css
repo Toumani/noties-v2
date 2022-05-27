@@ -206,3 +206,7 @@ input ~ svg .checkmark {
 input:checked ~ svg .checkmark {
   visibility: visible;
 }
+
+input:focus-visible, button:focus {
+  outline: unset;
+}

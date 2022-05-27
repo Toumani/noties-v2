@@ -3,9 +3,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 
 import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
-import Menu from './Menu';
 
 import Tabs from './pages/Tabs';
+import LoginPage from "./pages/LoginPage";
 
 window.matchMedia("(prefers-color-scheme: dark)").addListener(async (status) => {
   try {
@@ -19,13 +19,11 @@ const AppShell = () => {
   return (
     <IonApp>
       <IonReactRouter>
-        <IonSplitPane contentId="main">
-          <Menu />
           <IonRouterOutlet id="main">
+            <Route path="/login" component={LoginPage} exact={true} />
             <Route path="/tabs" render={() => <Tabs />} />
             <Route exact path="/" render={() => <Redirect to="/tabs" />} />
           </IonRouterOutlet>
-        </IonSplitPane>
       </IonReactRouter>
     </IonApp>
   );
