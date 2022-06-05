@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {RouteComponentProps} from "react-router";
 import {IonContent, IonPage} from "@ionic/react";
 import Image from "next/image";
+import axios from "axios";
 
 interface YellowCoverSvgProps {
   expanded: boolean
@@ -34,6 +35,9 @@ const YellowCoverSvg: React.FC<YellowCoverSvgProps> = ({ expanded}) => {
 
 const LoginPage: React.FC<RouteComponentProps> = () => {
   const [coverExpanded, setCoverExpanded] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   return (
     <IonPage>
       <IonContent>
@@ -50,16 +54,30 @@ const LoginPage: React.FC<RouteComponentProps> = () => {
           <input
             className="px-6 py-2 rounded-full border-2 border-yellow text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700"
             type="text"
-            placeholder="Nom d'utilisateur"/>
-          <input className="px-6 py-2 rounded-full border-2 border-yellow text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700" type="password" placeholder="···········"/>
+            placeholder="Nom d'utilisateur"
+            onChange={e => setUsername(e.target.value)}
+          />
+          <input
+            className="px-6 py-2 rounded-full border-2 border-yellow text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700"
+            type="password"
+            placeholder="···········"
+            onChange={e => setPassword(e.target.value)}/>
           <button
-            className="px-6 py-2 text-gray-50 font-bold bg-yellow rounded-full"
+            className="px-6 py-2 text-gray-50 font-bold bg-yellow rounded-full dark:text-gray-800"
             style={{ marginTop: '1.5rem' }}
-            onClick={() => {
-              setCoverExpanded(!coverExpanded)
-              setTimeout(() => setCoverExpanded(false), 3000)
-            } }
+            onClick={async () => {
+              axios
+                .post('/api/login', {
+                  username, password
+                })
+                .then(res => {
+                    setCoverExpanded(!coverExpanded)
+                    setTimeout(() => setCoverExpanded(false), 3000)
+                })
+                .catch(error => setMessage('Username and/or password incorrect'))
+            }}
           >Connexion</button>
+          <p className="text-red-600">{ message }</p>
         </div>
       </IonContent>
     </IonPage>
