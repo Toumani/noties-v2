@@ -7,76 +7,7 @@ const initialState = {
   user: {
     name: 'Kenza'
   },
-  notes: [
-    {
-      id: 1,
-      title: 'Marché express mai 2022',
-      categoryId: 1,
-      category: { name: 'Courses 🛒', color: '#12bcd5' },
-      nbElementDone: 4,
-      nbElement: 10,
-      author: 'Kenza',
-      tasks: [
-        { title: 'Tomates 🍅', index: 0, done: false },
-        { title: 'Bananes 🍌', index: 1, done: true },
-        { title: 'Pommes 🍏', index: 2, done: false },
-        { title: 'Viande 🥩', index: 3, done: false },
-        { title: 'Avocat 🥑', index: 4, done: false },
-        { title: 'Viénoiseries 🥐', index: 5, done: true },
-        { title: 'Pommes de terre 🥔', index: 6, done: false },
-        { title: 'Raisins 🍇', index: 7, done: true },
-        { title: 'Ail 🧄', index: 8, done: false },
-        { title: 'Pâtes 🍝', index: 9, done: true },
-      ]
-    },
-    {
-      id: 2,
-      title: 'Épargne mensuelle',
-      categoryId: 3,
-      category: { name: 'Épargne 💰', color: '#5ba65a' },
-      nbElementDone: 4,
-      nbElement: 4,
-      author: 'Kenza',
-      tasks: [
-        { title: 'Décembre 2021 : 2500', index: 0, done: true },
-        { title: 'Janvier 2022 : 2300', index: 1, done: true },
-        { title: 'Février 2022 : 3000', index: 2, done: true },
-        { title: 'Mars 2022 : 2500', index: 3, done: true },
-      ]
-    },
-    {
-      id: 3,
-      title: 'Course Shein',
-      categoryId: 2,
-      category: { name: 'Shopping 🛍️', color: '#a32b1c' },
-      nbElementDone: 3,
-      nbElement: 7,
-      author: 'Kenza',
-      tasks: [
-        { title: 'Haut jaune 🎽', index: 0, done: false },
-        { title: 'Sandale plage 🩴', index: 1, done: false },
-        { title: 'Collier de perles 📿', index: 2, done: true },
-        { title: 'Ceinture', index: 3, done: false },
-        { title: 'Basket 👟', index: 4, done: false },
-        { title: 'Chapeau 👒', index: 5, done: true },
-        { title: 'Guitare 🎸', index: 6, done: true },
-      ]
-    },
-    {
-      id: 4,
-      title: 'Marché express avril 2022',
-      categoryId: 1,
-      category: { name: 'Courses 🛒', color: '#12bcd5' }, // TODO remove redundancy
-      nbElementDone: 2,
-      nbElement: 3,
-      author: 'Kenza',
-      tasks: [
-        { title: 'Tomates 🍅', index: 0, done: false },
-        { title: 'Bananes 🍌', index: 1, done: true },
-        { title: 'Pâtes 🍝', index: 9, done: true },
-      ]
-    }
-  ],
+  notes: [],
   categories: [
     { id: 1, name: 'Courses 🛒', color: '#12bcd5' },
     { id: 2, name: 'Shopping 🛍️', color: '#a32b1c' },
@@ -89,8 +20,20 @@ let persistedState = {}
 if (typeof window !== "undefined")
   persistedState = window.localStorage['persistedState'] !== undefined ? JSON.parse(window.localStorage['persistedState']) : {};
 
+export const setNotes = (notes) => {
+  return {
+    type: 'SET_NOTES',
+    notes
+  }
+}
+
 let reducer = (state, action) => {
   switch (action.type) {
+    case 'SET_NOTES':
+      return {
+        ...state,
+        notes: action.notes
+      }
     default: return state;
   }
 }

@@ -1,15 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt';
+import { withIronSessionApiRoute } from 'iron-session/next'
+import {sessionOptions} from '../../lib/session'
 
 const prisma = new PrismaClient()
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export type User = {
+  username: string
+}
+
+export default withIronSessionApiRoute(handler, sessionOptions)
+
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { username, password } = req.body;
   switch (req.method) {
     case 'POST':
-      getUser(username, password)
-        .then(result => {
+      authenticate(username, password)
+        .then(async (result) => {
+          req.session.user = { username: result.username }
+          await req.session.save()
           res.status(200).json({
             data: 'eyaa;dkfajei', // jwt goes here
             success: true,
@@ -32,7 +42,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function getUser(username: string, password: string) {
+async function authenticate(username: string, password: string) {
   const user = await prisma.users.findFirst({
     where: { username }
   });

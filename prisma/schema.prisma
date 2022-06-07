@@ -19,6 +19,8 @@ model note {
   created     DateTime? @db.Timestamp(6)
   title       String?   @db.VarChar(255)
   category_id Int?
+  nbDone      Int?      @map("nb_done") @default(0) @db.SmallInt
+  nbTotal     Int?      @map("nb_total") @default(0) @db.SmallInt
   category    category? @relation(fields: [category_id], references: [id], onUpdate: NoAction, map: "fkhmtqn561muh2r322gpkajjilp")
   todo        todo[]
 }

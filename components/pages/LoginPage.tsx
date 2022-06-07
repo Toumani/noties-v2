@@ -33,7 +33,7 @@ const YellowCoverSvg: React.FC<YellowCoverSvgProps> = ({ expanded}) => {
   )
 }
 
-const LoginPage: React.FC<RouteComponentProps> = () => {
+const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
   const [coverExpanded, setCoverExpanded] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -52,13 +52,13 @@ const LoginPage: React.FC<RouteComponentProps> = () => {
             <Image width={50} height={50} src={`/logo.png`} className="rounded-full" alt="Logo" />
           </header>
           <input
-            className="px-6 py-2 rounded-full border-2 border-yellow text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700"
+            className="px-6 py-2 rounded-full border-2 border-gray-900 text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700 dark:text-gray-50 dark:bg-gray-800"
             type="text"
             placeholder="Nom d'utilisateur"
             onChange={e => setUsername(e.target.value)}
           />
           <input
-            className="px-6 py-2 rounded-full border-2 border-yellow text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700"
+            className="px-6 py-2 rounded-full border-2 border-gray-900 text-gray-700 focus:border-yellow focus:border-4 focus:ring-blue-700 dark:text-gray-50 dark:bg-gray-800"
             type="password"
             placeholder="···········"
             onChange={e => setPassword(e.target.value)}/>
@@ -71,10 +71,14 @@ const LoginPage: React.FC<RouteComponentProps> = () => {
                   username, password
                 })
                 .then(res => {
-                    setCoverExpanded(!coverExpanded)
-                    setTimeout(() => setCoverExpanded(false), 3000)
+                    setMessage('')
+                    setCoverExpanded(true)
+                    setTimeout(() => {
+                      setCoverExpanded(false)
+                      history.push('/tabs')
+                    }, 3000)
                 })
-                .catch(error => setMessage('Username and/or password incorrect'))
+                .catch(error => setMessage('Nom d\'utilisateur et/ou mdp incorrect'))
             }}
           >Connexion</button>
           <p className="text-red-600">{ message }</p>

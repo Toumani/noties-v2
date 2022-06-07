@@ -1,4 +1,5 @@
 import React, {useContext} from "react";
+import {RouteComponentProps} from "react-router";
 import Image from "next/image";
 import {
   IonPage,
@@ -13,6 +14,7 @@ import {
 import { logOut } from 'ionicons/icons';
 
 import { AppContext } from '../../store/State';
+import axios from "axios";
 
 const AvatarHolderSvg = () => {
   return (
@@ -79,7 +81,7 @@ const AvatarHolderSvg = () => {
   )
 }
 
-const SettingsPage = () => {
+const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
   const { state } = useContext(AppContext);
 
   return (
@@ -121,7 +123,13 @@ const SettingsPage = () => {
                 </IonItem>
               </IonList>
               <div className="flex flex-col px-2">
-                  <IonButton color="danger">
+                  <IonButton color="danger" onClick={e => {
+                    axios
+                      .get('/api/logout')
+                      .then(() => {
+                        history.push('/login')
+                      })
+                  }}>
                     Déconnexion
                     <IonIcon slot="end" icon={logOut}></IonIcon>
                   </IonButton>

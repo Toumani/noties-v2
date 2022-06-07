@@ -1,4 +1,4 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {RouteComponentProps} from "react-router";
 
 import Image from "next/image";
@@ -15,9 +15,10 @@ import {
   IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption
 } from "@ionic/react";
 
-import { AppContext } from '../../store/State';
+import {AppContext, setNotes} from '../../store/State';
 import Card from '../ui/Card';
 import {add} from "ionicons/icons";
+import axios from "axios";
 
 const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
   const nbElementRemaining = nbElement - nbElementDone;
@@ -54,10 +55,26 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
 }
 
 const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
-  const { state } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
   const [ newNoteCategoryName, setNewNoteCategoryName ] = useState('');
+
+  useEffect(() => {
+    axios
+      .get('/api/notes')
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.success)
+          dispatch(setNotes(res.data.data))
+      })
+      .catch(error => {
+        console.log(error);
+        if (error.response.status === 401) {
+          history.push('/login')
+        }
+      })
+  }, [])
 
   return (
     <IonPage>
