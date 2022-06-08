@@ -11,15 +11,12 @@ import {
   IonList,
   IonPage,
   IonTitle,
-  IonToolbar
+  IonToolbar, useIonViewDidEnter
 } from "@ionic/react";
 import { pencil, trash, checkmark, add } from 'ionicons/icons';
-
-interface Task {
-  index: number,
-  title: string,
-  done: boolean,
-}
+import axios from "axios";
+import {NoteWithCategory} from "../../pages/api/notes";
+import {Task} from "../../pages/api/tasks/[nid]";
 
 interface TaskViewProps {
   task: Task,
@@ -67,14 +64,27 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit }) => {
   )
 }
 
-const NotePage: React.FC<RouteComponentProps> = ({ match }) => {
+const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state } = useContext(AppContext);
   const { params: { noteId } } = match
 
   const [ edit, setEdit ] = useState(false);
   const [ isAlertOpen, setAlertOpen ] = useState(false);
+  const [ tasks, setTasks ] = useState<Task[]>([])
 
-  const note = state.notes.find(n => n.id === parseInt(noteId));
+  const note: NoteWithCategory = state.notes.find(n => n.id === parseInt(noteId));
+
+  useIonViewDidEnter(() => {
+    axios.get(`/api/tasks/${noteId}`)
+      .then(res => {
+        setTasks(res.data as Task[]);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          history.push('/login')
+        }
+      })
+  })
 
   return (
     <IonPage>
@@ -96,7 +106,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match }) => {
           { note.title }
         </h1>
         <IonList>
-          {note.tasks.map((task) => <TaskView task={task} edit={edit} />)}
+          {tasks.map((task) => <TaskView task={task} edit={edit} />)}
         </IonList>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setAlertOpen(true)}>

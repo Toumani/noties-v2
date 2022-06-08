@@ -4,6 +4,7 @@ import {RouteComponentProps} from "react-router";
 import Image from "next/image";
 
 import {
+  useIonViewDidEnter,
   IonContent,
   IonHeader,
   IonToolbar,
@@ -60,16 +61,14 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
   const [ newNoteCategoryName, setNewNoteCategoryName ] = useState('');
 
-  useEffect(() => {
+  useIonViewDidEnter(() => {
     axios
       .get('/api/notes')
       .then((res) => {
-        console.log(res.data);
         if (res.data.success)
           dispatch(setNotes(res.data.data))
       })
       .catch(error => {
-        console.log(error);
         if (error.response.status === 401) {
           history.push('/login')
         }

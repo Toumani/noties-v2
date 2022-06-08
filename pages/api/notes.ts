@@ -5,7 +5,7 @@ import {sessionOptions} from "../../lib/session";
 
 const prisma = new PrismaClient()
 
-export type Note = {
+export interface Note {
   id: number,
   created: Date,
   title: string,
@@ -28,11 +28,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'GET':
       if (req.session.user)
-        getNotesWithCategory()
+        return getNotesWithCategory()
           .then(async response => {
-            req.session.notes = response as unknown as NoteWithCategory[]
+            req.session.notes = response as unknown as NoteWithCategory[] // Do I really need this ?
             await req.session.save()
-            res.status(200).json({
+            return res.status(200).json({
               data: response,
               success: true,
               reason: null
@@ -44,16 +44,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           .finally(async () => {
             await prisma.$disconnect()
           })
-      else {
-        res.status(401).json({
+      else
+        return res.status(401).json({
           data: null,
           success: false,
           reason: 'unauthorised'
         })
-      }
-      break;
     default:
-      res.status(405).json({ data: null, success: false, reason: 'method-not-allowed' })
+      return res.status(405).json({ data: null, success: false, reason: 'method-not-allowed' })
   }
 }
 
@@ -61,7 +59,11 @@ async function getNotesWithCategory() {
   return (await prisma.note.findMany({
     include: {
       category: true,
-    }
+    },
+    orderBy: {
+      created: 'desc',
+    },
+    take: 10,
   })).map(it => ({
     id: it.id,
     created: new Date(),
