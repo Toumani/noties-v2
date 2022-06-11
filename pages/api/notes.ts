@@ -30,8 +30,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (req.session.user)
         return getNotesWithCategory()
           .then(async response => {
-            req.session.notes = response as unknown as NoteWithCategory[] // Do I really need this ?
-            await req.session.save()
             return res.status(200).json({
               data: response,
               success: true,

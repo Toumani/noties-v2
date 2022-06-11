@@ -21,6 +21,7 @@ import {Task} from "../../pages/api/tasks/[nid]";
 interface TaskViewProps {
   task: Task,
   edit: boolean,
+  update: (Task) => void
 }
 
 const taskNames: string[] = [
@@ -42,7 +43,7 @@ const taskNames: string[] = [
   'Monter la vidéo de mariage',
 ]
 
-const TaskView: React.FC<TaskViewProps> = ({ task, edit }) => {
+const TaskView: React.FC<TaskViewProps> = ({ task, edit, update }) => {
   const { index, title, done } = task;
   const [newTitle, setNewTitle] = useState(title)
   return (
@@ -57,7 +58,14 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit }) => {
           :
         <>
           <IonLabel>{title}</IonLabel>
-          <IonCheckbox checked={done} slot="end" />
+          <IonCheckbox checked={done} slot="end" onIonChange={e => {
+            axios
+              .put(`/api/tasks`, { ...task, done: e.detail.checked })
+              .then((res) => update(res.data.result))
+              .catch(e => {
+                // TODO notify that something went wrong
+              })
+          }} />
         </>
       }
     </IonItem>
@@ -106,7 +114,17 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           { note.title }
         </h1>
         <IonList>
-          {tasks.map((task) => <TaskView task={task} edit={edit} />)}
+          { tasks.sort((a, b) => a.index - b.index).map((task) =>
+            <TaskView
+              key={task.id}
+              task={task}
+              edit={edit}
+              update={(updatedTask) => {
+                const task = tasks.filter(it => it.id = updatedTask.id)[0];
+                task.done = updatedTask.done;
+              }}
+            />
+          )}
         </IonList>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setAlertOpen(true)}>

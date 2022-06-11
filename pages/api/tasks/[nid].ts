@@ -4,12 +4,15 @@ import {sessionOptions} from "../../../lib/session";
 import {NextApiRequest, NextApiResponse} from "next";
 
 const prisma = new PrismaClient()
+
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 export interface Task {
-  index: number,
+  id: number,
   title: string,
   done: boolean,
+  index: number,
+  noteId: number,
 }
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -44,8 +47,10 @@ async function getTasksOfNote(noteId: number) {
       note_id: noteId
     }
   })).map(it => ({
+    id: it.id,
     title: it.task,
     done: it.done,
-    index: it.id // Does not actually correspond to the index. Must update database model to include tasks indexes.
+    index: it.id, // Does not actually correspond to the index. Must update database model to include tasks indexes.
+    noteId: it.note_id
   }))
 }

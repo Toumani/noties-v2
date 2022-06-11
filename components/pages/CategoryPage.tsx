@@ -11,18 +11,15 @@ import {
   IonPage,
   IonPopover,
   IonTitle,
-  IonToolbar,
+  IonToolbar, useIonViewDidEnter,
 } from "@ionic/react";
 
 import {AppContext} from "../../store/State";
 import Card from "../ui/Card";
 import {pencil, trash, colorPalette, menu, add} from "ionicons/icons";
 import ColoredRadio from "../ui/ColoredRadio";
-
-interface Category {
-  name: string,
-  color: string
-}
+import {Category} from "../../pages/api/categories";
+import axios from "axios";
 
 interface CategoryCardProps {
   category: Category,
@@ -162,11 +159,25 @@ const colors: string[] = [
   '#420ea4',
 ];
 
-const CategoryPage: React.FC<RouteComponentProps> = () => {
+const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
   const { state } = useContext(AppContext);
+  const [ categories, setCategories ] = useState<Category[]>([])
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newCategoryName, setNewCategoryName ] = useState('');
   // const [ newCategoryColor, setNewCaregoryColor ] = useState('#ffffff');
+
+  useIonViewDidEnter(() => {
+    axios
+      .get('/api/categories')
+      .then((res) => {
+        setCategories(res.data)
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          history.push('/login')
+        }
+      })
+  })
 
   return (
     <IonPage>
@@ -176,9 +187,9 @@ const CategoryPage: React.FC<RouteComponentProps> = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        { state.categories.map(category => {
-          const nbNotes = state.notes.filter(it => it.categoryId === category.id).length;
-          return <CategoryCard key={category.id} category={category} nbNotes={nbNotes} />
+        { categories.map(category => {
+          const nbNotes = state.notes.filter(it => it.category.id === category.id).length;
+          return <CategoryCard key={category.color} category={category} nbNotes={nbNotes} />
         })}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setModalOpen(true)}>

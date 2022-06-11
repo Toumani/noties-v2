@@ -24,7 +24,9 @@ import axios from "axios";
 const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
   const nbElementRemaining = nbElement - nbElementDone;
   let message: string;
-  if (nbElementRemaining == 0)
+  if (nbElement == 0)
+    message = 'Aucun élément';
+  else if (nbElementRemaining == 0)
     message = 'Aucun élément restant';
   else if (nbElementRemaining == 1)
     message = '1 élément restant';
@@ -40,8 +42,15 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
         <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4>
         <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{title}</h2>
         <div className="flex w-full h-3 my-4 bg-gray-400 rounded-full">
-          <div className="h-full rounded-full"
-               style={{width: nbElementDone / nbElement * 100 + '%', backgroundColor: categoryColor}}></div>
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: (nbElement != 0 ? nbElementDone / nbElement * 100 : 0) + '%',
+              backgroundColor: categoryColor,
+              transitionProperty: 'width',
+              transitionDuration: '.4s',
+            }}
+          ></div>
         </div>
         <p className="sm:text-sm text-s text-gray-500 mr-1 my-3 dark:text-gray-400">{message}</p>
         <div className="flex items-center space-x-4">
@@ -73,7 +82,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           history.push('/login')
         }
       })
-  }, [])
+  })
 
   return (
     <IonPage>
