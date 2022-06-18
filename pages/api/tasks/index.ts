@@ -9,21 +9,53 @@ const prisma = new PrismaClient()
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (!req.session.user)
+    return res.status(401).json({ message: 'unauthorised' })
+
   const task = req.body
   switch (req.method) {
+    case 'POST':
+      return createTask(task)
+        .then((result) => res.status(201).json(result))
+        .finally(async () => {
+          await prisma.$disconnect()
+        })
     case 'PUT':
-      if (req.session.user) {
         return updateTaskStatus(task)
-          .then((result) => res.status(200).json({ result}))
+          .then((result) => res.status(200).json({ result }))
           .finally(async () => {
             await prisma.$disconnect()
           })
-      }
-      else
-        return res.status(401).json({ message: 'unauthorised' })
     default:
       return res.status(405).json({ message: 'Method not allowed' })
   }
+}
+
+async function createTask(task: Task) {
+  const noteId = parseInt(task.noteId)
+
+  const todo = await prisma.todo.create({
+    data: {
+      done: false,
+      task: task.title,
+      note: { connect: { id: noteId } }
+    }
+  })
+  const nbTotal = await prisma.todo.count({ where: { note_id: noteId } })
+  await prisma.note.update({
+    where: {id: noteId},
+    data: {
+      nbTotal,
+    }
+  });
+
+  return {
+    id: todo.id,
+    title: todo.task,
+    done: todo.done,
+    index: todo.id,
+    noteId: todo.note_id
+  } as Task
 }
 
 async function updateTaskStatus(task: Task) {

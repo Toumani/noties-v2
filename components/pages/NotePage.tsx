@@ -120,7 +120,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
               task={task}
               edit={edit}
               update={(updatedTask) => {
-                const task = tasks.filter(it => it.id = updatedTask.id)[0];
+                const task = tasks.filter(it => it.id == updatedTask.id)[0];
                 task.done = updatedTask.done;
               }}
             />
@@ -150,7 +150,18 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             },
             {
               text: 'Ok',
-              handler: () => { console.log('Creating task'); }
+              handler: (data) => {
+                axios
+                  .post('/api/tasks', {
+                    title: data.title,
+                    done: false,
+                    index: 0, // index is not yet available
+                    noteId
+                  })
+                  .then((response) => {
+                    setTasks([...tasks, response.data])
+                  })
+              }
             },
           ]}
         />
