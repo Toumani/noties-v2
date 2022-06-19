@@ -26,6 +26,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           .finally(async () => {
             await prisma.$disconnect()
           })
+    case 'DELETE':
+      return deleteTask(task)
+        .then((result) => res.status(200).json(result))
+        .finally(async () => {
+          await prisma.$disconnect()
+        })
     default:
       return res.status(405).json({ message: 'Method not allowed' })
   }
@@ -61,12 +67,37 @@ async function createTask(task: Task) {
 async function updateTaskStatus(task: Task) {
   const updatedTask = await prisma.todo.update({
     where: { id: task.id },
-    data: { done: task.done }
+    data: { task: task.title, done: task.done }
   })
   const nbDone = await prisma.todo.count({ where: { note_id: task.noteId, done: true } })
   await prisma.note.update({
     where: { id: task.noteId },
     data: { nbDone: nbDone }
   })
-  return updatedTask;
+  return {
+    id: updatedTask.id,
+    title: updatedTask.task,
+    done: updatedTask.done,
+    index: updatedTask.id,
+    noteId: updatedTask.note_id
+  } as Task;
+}
+
+async function deleteTask(task: Task) {
+  const deletedTask = await prisma.todo.delete({
+    where: { id: task.id }
+  })
+  const nbTotal = await prisma.todo.count({ where: { note_id: task.noteId } })
+  const nbDone = await prisma.todo.count({ where: { note_id: task.noteId, done: true } })
+  await prisma.note.update({
+    where: { id: task.noteId },
+    data: { nbDone, nbTotal }
+  })
+  return {
+    id: deletedTask.id,
+    title: deletedTask.task,
+    done: deletedTask.done,
+    index: deletedTask.id,
+    noteId: deletedTask.note_id
+  } as Task;
 }

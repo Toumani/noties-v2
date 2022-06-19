@@ -21,7 +21,8 @@ import {Task} from "../../pages/api/tasks/[nid]";
 interface TaskViewProps {
   task: Task,
   edit: boolean,
-  update: (Task) => void
+  onUpdate: (Task) => void,
+  onDelete: (number) => void
 }
 
 const taskNames: string[] = [
@@ -43,15 +44,29 @@ const taskNames: string[] = [
   'Monter la vidéo de mariage',
 ]
 
-const TaskView: React.FC<TaskViewProps> = ({ task, edit, update }) => {
-  const { index, title, done } = task;
+const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) => {
+  const { id, index, title, done } = task;
   const [newTitle, setNewTitle] = useState(title)
   return (
     <IonItem key={index}>
       { edit ?
         <>
-          <IonInput value={newTitle} onIonChange={e => setNewTitle(e.detail.value)} />
-          <IonButton color="danger">
+          <IonInput value={newTitle} onIonChange={e => setNewTitle(e.detail.value)} onIonBlur={e => {
+            onUpdate({ id, done, title: newTitle })
+            axios
+              .put(`/api/tasks`, { ...task, title: newTitle })
+              .then((res) => onUpdate(res.data.result))
+              .catch(e => {
+                // TODO notify that something went wrong
+              })
+          }} />
+          <IonButton color="danger" onClick={e => {
+            axios
+              .delete('/api/tasks', {
+                data: task
+              })
+              .then((res) => onDelete(res.data.id))
+          }}>
             <IonIcon icon={trash} />
           </IonButton>
         </>
@@ -61,7 +76,7 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit, update }) => {
           <IonCheckbox checked={done} slot="end" onIonChange={e => {
             axios
               .put(`/api/tasks`, { ...task, done: e.detail.checked })
-              .then((res) => update(res.data.result))
+              .then((res) => onUpdate(res.data.result))
               .catch(e => {
                 // TODO notify that something went wrong
               })
@@ -119,9 +134,14 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
               key={task.id}
               task={task}
               edit={edit}
-              update={(updatedTask) => {
+              onUpdate={(updatedTask) => {
                 const task = tasks.filter(it => it.id == updatedTask.id)[0];
+                task.title = updatedTask.title;
                 task.done = updatedTask.done;
+              }}
+              onDelete={(id) => {
+                const updatedTasks = tasks.filter(it => it.id != id);
+                setTasks(updatedTasks);
               }}
             />
           )}
