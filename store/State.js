@@ -8,12 +8,7 @@ const initialState = {
     name: 'Kenza'
   },
   notes: [],
-  categories: [
-    { id: 1, name: 'Courses 🛒', color: '#12bcd5' },
-    { id: 2, name: 'Shopping 🛍️', color: '#a32b1c' },
-    { id: 3, name: 'Épargne 💰', color: '#5ba65a' },
-    { id: 4, name: 'Sorties ✈️', color: '#c67ade' },
-  ]
+  categories: []
 }
 
 let persistedState = {}
@@ -27,12 +22,24 @@ export const setNotes = (notes) => {
   }
 }
 
+export const setCategories = (categories) => {
+  return {
+    type: 'SET_CATEGORIES',
+    categories
+  }
+}
+
 let reducer = (state, action) => {
   switch (action.type) {
     case 'SET_NOTES':
       return {
         ...state,
         notes: action.notes
+      }
+    case 'SET_CATEGORIES':
+      return {
+        ...state,
+        categories: action.categories
       }
     default: return state;
   }

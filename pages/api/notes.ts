@@ -25,28 +25,35 @@ export type NoteWithCategory = {
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (!req.session.user)
+    return res.status(401).json({
+      data: null,
+      success: false,
+      reason: 'unauthorised'
+    })
   switch (req.method) {
     case 'GET':
-      if (req.session.user)
-        return getNotesWithCategory()
-          .then(async response => {
-            return res.status(200).json({
-              data: response,
-              success: true,
-              reason: null
-            })
+      return getNotesWithCategory()
+        .then(async response => {
+          return res.status(200).json({
+            data: response,
+            success: true,
+            reason: null
           })
-          .catch((e) => {
-            throw e
-          })
-          .finally(async () => {
-            await prisma.$disconnect()
-          })
-      else
-        return res.status(401).json({
-          data: null,
-          success: false,
-          reason: 'unauthorised'
+        })
+        .catch((e) => {
+          throw e
+        })
+        .finally(async () => {
+          await prisma.$disconnect()
+        })
+    case 'POST':
+      return createNote(req.body)
+        .then(response => {
+          return res.status(201).json(response)
+        })
+        .finally(async () => {
+          await prisma.$disconnect()
         })
     default:
       return res.status(405).json({ data: null, success: false, reason: 'method-not-allowed' })
@@ -71,4 +78,17 @@ async function getNotesWithCategory() {
     nbElement: it.nbTotal,
     author: 'Kenza'
   }))
+}
+
+async function createNote(note: Note) {
+  return await prisma.note.create({
+    data: {
+      id: undefined,
+      created: new Date(),
+      title: note.title,
+      category_id: note.categoryId,
+      nbDone: 0,
+      nbTotal: 0
+    }
+  })
 }

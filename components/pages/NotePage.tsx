@@ -171,16 +171,17 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             {
               text: 'Ok',
               handler: (data) => {
-                axios
-                  .post('/api/tasks', {
-                    title: data.title,
-                    done: false,
-                    index: 0, // index is not yet available
-                    noteId
-                  })
-                  .then((response) => {
-                    setTasks([...tasks, response.data])
-                  })
+                if (data.title != '')
+                  axios
+                    .post('/api/tasks', {
+                      title: data.title,
+                      done: false,
+                      index: 0, // index is not yet available
+                      noteId
+                    })
+                    .then((response) => {
+                      setTasks([...tasks, response.data])
+                    })
               }
             },
           ]}

@@ -16,7 +16,7 @@ import {
   IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption
 } from "@ionic/react";
 
-import {AppContext, setNotes} from '../../store/State';
+import {AppContext, setCategories, setNotes} from '../../store/State';
 import Card from '../ui/Card';
 import {add} from "ionicons/icons";
 import axios from "axios";
@@ -68,9 +68,9 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state, dispatch } = useContext(AppContext);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
-  const [ newNoteCategoryName, setNewNoteCategoryName ] = useState('');
+  const [ newNoteCategoryId, setNewNoteCategoryId ] = useState(-1);
 
-  useIonViewDidEnter(() => {
+  const fetchNotes = () => {
     axios
       .get('/api/notes')
       .then((res) => {
@@ -82,7 +82,9 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           history.push('/login')
         }
       })
-  })
+  };
+
+  useIonViewDidEnter(fetchNotes)
 
   return (
     <IonPage>
@@ -106,7 +108,19 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           />
         ))}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => setModalOpen(true)}>
+          <IonFabButton onClick={() => {
+            axios
+              .get('/api/categories')
+              .then((res) => {
+                  dispatch(setCategories(res.data))
+              })
+              .catch(error => {
+                if (error.response.status === 401) {
+                  history.push('/login')
+                }
+              })
+            setModalOpen(true);
+          }}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
@@ -125,18 +139,30 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             <IonItem>
               <IonLabel position="stacked">Catégorie</IonLabel>
               <IonSelect
-                value={newNoteCategoryName}
+                value={newNoteCategoryId}
                 okText="OK"
                 cancelText="Fermer"
-                onIonChange={e => setNewNoteCategoryName(e.detail.value)}
+                onIonChange={e => setNewNoteCategoryId(e.detail.value)}
               >
                 { state.categories.map(category => (
-                  <IonSelectOption key={category.id} value={category.name}>{ category.name }</IonSelectOption>
+                  <IonSelectOption key={category.id} value={category.id}>{ category.name }</IonSelectOption>
                 ))}
               </IonSelect>
             </IonItem>
             <div className="flex flex-col mt-2">
-              <IonButton onClick={() => setModalOpen(false)}>Créer</IonButton>
+              <IonButton disabled={newNoteTitle == '' || newNoteCategoryId < 0} onClick={() => {
+                axios
+                  .post('/api/notes', {
+                    title: newNoteTitle,
+                    categoryId: newNoteCategoryId
+                  })
+                  .then((res) => {
+                    setNewNoteCategoryId(-1);
+                    setNewNoteTitle('');
+                    fetchNotes();
+                    setModalOpen(false);
+                  })
+              }}>Créer</IonButton>
               <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
             </div>
           </div>
