@@ -38,7 +38,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function createTask(task: Task) {
-  const noteId = parseInt(task.noteId)
+  const noteId = parseInt(task.noteId + '')
 
   const todo = await prisma.todo.create({
     data: {
