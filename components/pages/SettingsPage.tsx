@@ -125,7 +125,7 @@ const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
               <div className="flex flex-col px-2">
                   <IonButton color="danger" onClick={e => {
                     axios
-                      .get('/api/logout')
+                      .get(process.env.NEXT_PUBLIC_API_URL + 'api/logout')
                       .then(() => {
                         history.push('/login')
                       })

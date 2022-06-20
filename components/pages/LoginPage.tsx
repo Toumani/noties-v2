@@ -67,7 +67,7 @@ const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
             style={{ marginTop: '1.5rem' }}
             onClick={async () => {
               axios
-                .post('/api/login', {
+                .post(process.env.NEXT_PUBLIC_API_URL + 'api/login', {
                   username, password
                 })
                 .then(res => {

@@ -168,7 +168,7 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
 
   useIonViewDidEnter(() => {
     axios
-      .get('/api/categories')
+      .get(process.env.NEXT_PUBLIC_API_URL + 'api/categories')
       .then((res) => {
         setCategories(res.data)
       })

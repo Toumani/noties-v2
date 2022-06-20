@@ -72,7 +72,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
 
   const fetchNotes = () => {
     axios
-      .get('/api/notes')
+      .get(process.env.NEXT_PUBLIC_API_URL + 'api/notes')
       .then((res) => {
         if (res.data.success)
           dispatch(setNotes(res.data.data))
@@ -110,7 +110,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => {
             axios
-              .get('/api/categories')
+              .get(process.env.NEXT_PUBLIC_API_URL + 'api/categories')
               .then((res) => {
                   dispatch(setCategories(res.data))
               })
@@ -152,7 +152,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             <div className="flex flex-col mt-2">
               <IonButton disabled={newNoteTitle == '' || newNoteCategoryId < 0} onClick={() => {
                 axios
-                  .post('/api/notes', {
+                  .post(process.env.NEXT_PUBLIC_API_URL + 'api/notes', {
                     title: newNoteTitle,
                     categoryId: newNoteCategoryId
                   })

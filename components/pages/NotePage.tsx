@@ -54,7 +54,7 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) =
           <IonInput value={newTitle} onIonChange={e => setNewTitle(e.detail.value)} onIonBlur={e => {
             onUpdate({ id, done, title: newTitle })
             axios
-              .put(`/api/tasks`, { ...task, title: newTitle })
+              .put(process.env.NEXT_PUBLIC_API_URL + `api/tasks`, { ...task, title: newTitle })
               .then((res) => onUpdate(res.data.result))
               .catch(e => {
                 // TODO notify that something went wrong
@@ -62,7 +62,7 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) =
           }} />
           <IonButton color="danger" onClick={e => {
             axios
-              .delete('/api/tasks', {
+              .delete(process.env.NEXT_PUBLIC_API_URL + 'api/tasks', {
                 data: task
               })
               .then((res) => onDelete(res.data.id))
@@ -75,7 +75,7 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) =
           <IonLabel>{title}</IonLabel>
           <IonCheckbox checked={done} slot="end" onIonChange={e => {
             axios
-              .put(`/api/tasks`, { ...task, done: e.detail.checked })
+              .put(process.env.NEXT_PUBLIC_API_URL + `api/tasks`, { ...task, done: e.detail.checked })
               .then((res) => onUpdate(res.data.result))
               .catch(e => {
                 // TODO notify that something went wrong
@@ -98,7 +98,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const note: NoteWithCategory = state.notes.find(n => n.id === parseInt(noteId));
 
   useIonViewDidEnter(() => {
-    axios.get(`/api/tasks/${noteId}`)
+    axios.get(process.env.NEXT_PUBLIC_API_URL + `api/tasks/${noteId}`)
       .then(res => {
         setTasks(res.data as Task[]);
       })
@@ -173,7 +173,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
               handler: (data) => {
                 if (data.title != '')
                   axios
-                    .post('/api/tasks', {
+                    .post(process.env.NEXT_PUBLIC_API_URL + 'api/tasks', {
                       title: data.title,
                       done: false,
                       index: 0, // index is not yet available
