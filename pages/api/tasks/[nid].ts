@@ -3,6 +3,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {sessionOptions} from "../../../lib/session";
 import {NextApiRequest, NextApiResponse} from "next";
 import {cors} from "../../../lib/init-middleware";
+import {bypassAuth} from '../../../lib/constants';
 
 const prisma = new PrismaClient()
 
@@ -20,7 +21,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   await cors(req, res);
   switch (req.method) {
     case 'GET':
-      if (req.session.user)
+      if (req.session.user || bypassAuth)
         return getTasksOfNote(parseInt(req.query.nid as string))
           .then(async response => {
             return res.status(200).json(response)

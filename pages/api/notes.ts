@@ -3,6 +3,7 @@ import {PrismaClient} from '@prisma/client'
 import {withIronSessionApiRoute} from 'iron-session/next'
 import {sessionOptions} from "../../lib/session";
 import {cors} from "../../lib/init-middleware";
+import {bypassAuth} from '../../lib/constants';
 
 const prisma = new PrismaClient()
 
@@ -27,7 +28,7 @@ export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await cors(req, res);
-  if (!req.session.user)
+  if (!req.session.user && !bypassAuth)
     return res.status(401).json({
       data: null,
       success: false,
