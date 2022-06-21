@@ -2,6 +2,7 @@ import type {NextApiRequest, NextApiResponse} from 'next'
 import {PrismaClient} from '@prisma/client'
 import {withIronSessionApiRoute} from 'iron-session/next'
 import {sessionOptions} from "../../lib/session";
+import {cors} from "../../lib/init-middleware";
 
 const prisma = new PrismaClient()
 
@@ -25,6 +26,7 @@ export type NoteWithCategory = {
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await cors(req, res);
   if (!req.session.user)
     return res.status(401).json({
       data: null,

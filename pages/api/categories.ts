@@ -2,6 +2,7 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {sessionOptions} from "../../lib/session";
 import {NextApiRequest, NextApiResponse} from "next";
 import {PrismaClient} from "@prisma/client";
+import {cors} from "../../lib/init-middleware";
 
 const prisma = new PrismaClient()
 
@@ -14,6 +15,7 @@ export interface Category {
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await cors(req, res);
   switch (req.method) {
     case 'GET':
       if (req.session.user)

@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt';
 import { withIronSessionApiRoute } from 'iron-session/next'
 import {sessionOptions} from '../../lib/session'
+import { cors } from '../../lib/init-middleware'
 
 const prisma = new PrismaClient()
 
@@ -13,6 +14,7 @@ export type User = {
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await cors(req, res);
   const { username, password } = req.body;
   switch (req.method) {
     case 'POST':

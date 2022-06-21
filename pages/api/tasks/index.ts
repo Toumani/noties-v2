@@ -3,12 +3,14 @@ import {withIronSessionApiRoute} from "iron-session/next";
 import {sessionOptions} from "../../../lib/session";
 import {NextApiRequest, NextApiResponse} from "next";
 import {Task} from "./[nid]";
+import {cors} from "../../../lib/init-middleware";
 
 const prisma = new PrismaClient()
 
 export default withIronSessionApiRoute(handler, sessionOptions)
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await cors(req, res);
   if (!req.session.user)
     return res.status(401).json({ message: 'unauthorised' })
 
