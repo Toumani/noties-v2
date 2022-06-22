@@ -20,6 +20,7 @@ import {pencil, trash, colorPalette, menu, add} from "ionicons/icons";
 import ColoredRadio from "../ui/ColoredRadio";
 import {Category} from "../../pages/api/categories";
 import axios from "axios";
+import {API_URL} from "../../lib/constants";
 
 interface CategoryCardProps {
   category: Category,
@@ -168,7 +169,7 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
 
   useIonViewDidEnter(() => {
     axios
-      .get(process.env.NEXT_PUBLIC_API_URL + 'api/categories')
+      .get(API_URL + 'categories')
       .then((res) => {
         setCategories(res.data)
       })

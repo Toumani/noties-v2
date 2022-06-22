@@ -20,6 +20,7 @@ import {AppContext, setCategories, setNotes} from '../../store/State';
 import Card from '../ui/Card';
 import {add} from "ionicons/icons";
 import axios from "axios";
+import {API_URL, BASE_URL} from "../../lib/constants";
 
 const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
   const nbElementRemaining = nbElement - nbElementDone;
@@ -55,7 +56,7 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
         <p className="sm:text-sm text-s text-gray-500 mr-1 my-3 dark:text-gray-400">{message}</p>
         <div className="flex items-center space-x-4">
           <div className="w-10 h-10 relative">
-            <Image layout='fill' src={`/img/${author}.jpg`} className="rounded-full" alt={author}/>
+            <img src={`${BASE_URL}img/${author}.jpg`} className="rounded-full" alt={author}/>
           </div>
           <h3 className="text-gray-500 dark:text-gray-200 m-l-8 text-sm font-medium">{author}</h3>
         </div>
@@ -72,7 +73,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
 
   const fetchNotes = () => {
     axios
-      .get(process.env.NEXT_PUBLIC_API_URL + 'api/notes')
+      .get(API_URL + 'notes')
       .then((res) => {
         if (res.data.success)
           dispatch(setNotes(res.data.data))
@@ -110,7 +111,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => {
             axios
-              .get(process.env.NEXT_PUBLIC_API_URL + 'api/categories')
+              .get(API_URL + 'categories')
               .then((res) => {
                   dispatch(setCategories(res.data))
               })
@@ -152,7 +153,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             <div className="flex flex-col mt-2">
               <IonButton disabled={newNoteTitle == '' || newNoteCategoryId < 0} onClick={() => {
                 axios
-                  .post(process.env.NEXT_PUBLIC_API_URL + 'api/notes', {
+                  .post(API_URL + 'notes', {
                     title: newNoteTitle,
                     categoryId: newNoteCategoryId
                   })

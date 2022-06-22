@@ -1,6 +1,6 @@
 module.exports = {
   basePath: '',
   images: {
-    domains: ['images.unsplash.com'],
+    domains: ['noties-v2-toumani.vercel.app', 'noties-v2.vercel.app'],
   },
 };

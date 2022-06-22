@@ -4,6 +4,7 @@ import {IonContent, IonPage} from "@ionic/react";
 import Image from "next/image";
 import axios from "axios";
 import YellowCoverSvg from '../ui/YellowCoverSvg'
+import {API_URL} from "../../lib/constants";
 
 
 
@@ -41,7 +42,7 @@ const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
             style={{ marginTop: '1.5rem' }}
             onClick={async () => {
               axios
-                .post(process.env.NEXT_PUBLIC_API_URL + 'api/login', {
+                .post(API_URL + 'login', {
                   username, password
                 })
                 .then(res => {

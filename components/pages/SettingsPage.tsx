@@ -15,6 +15,7 @@ import { logOut } from 'ionicons/icons';
 
 import { AppContext } from '../../store/State';
 import axios from "axios";
+import {API_URL, BASE_URL} from "../../lib/constants";
 
 const AvatarHolderSvg = () => {
   return (
@@ -94,7 +95,7 @@ const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
       <IonContent className="ion-padding">
         <div className="w-full h-full p-4" slot="fixed">
           <div className="relative w-32 h-32 m-auto">
-            <Image className="rounded-full" layout='fill' src={`/img/${state.user.name}.jpg`} alt={state.user.name}/>
+            <img className="rounded-full" src={`${BASE_URL}img/${state.user.name}.jpg`} alt={state.user.name} />
           </div>
           <div className="flex flex-col" style={{ minHeight: 'calc(100% - 7rem)', transform: 'translateY(-3rem)' }}>
             <div className="flex" style={{ height: '63px' }}>
@@ -125,7 +126,7 @@ const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
               <div className="flex flex-col px-2">
                   <IonButton color="danger" onClick={e => {
                     axios
-                      .get(process.env.NEXT_PUBLIC_API_URL + 'api/logout')
+                      .get(API_URL + 'logout')
                       .then(() => {
                         history.push('/login')
                       })
