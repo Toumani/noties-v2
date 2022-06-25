@@ -3,9 +3,10 @@ import React from 'react';
 interface ColoredRadioProps {
   name: string,
   color: string,
+  trigger: (string) => void,
 }
 
-const ColoredRadio: React.FC<ColoredRadioProps> = ({ name, color }) => {
+const ColoredRadio: React.FC<ColoredRadioProps> = ({ name, color, trigger }) => {
   return (
     <label className="block w-12 h-12 cursor-pointer text-lg select-none">
       <input
@@ -14,6 +15,10 @@ const ColoredRadio: React.FC<ColoredRadioProps> = ({ name, color }) => {
         value={color}
         name={name}
         type="radio"
+        onChange={e => {
+          if (e.target.checked)
+            trigger(color)
+        }}
       />
       <svg className="absolute w-12 h-12" fill={color} stroke="currentColor" viewBox="3 3 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="8" strokeWidth={0} fill={color} />

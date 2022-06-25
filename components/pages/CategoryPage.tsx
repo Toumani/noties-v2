@@ -2,6 +2,7 @@ import React, {useContext, useState} from "react";
 import {RouteComponentProps} from "react-router";
 
 import {
+  IonToast,
   IonAlert,
   IonButton,
   IonContent, IonFab, IonFabButton,
@@ -14,7 +15,7 @@ import {
   IonToolbar, useIonViewDidEnter,
 } from "@ionic/react";
 
-import {AppContext} from "../../store/State";
+import {AppContext, setCategories} from "../../store/State";
 import Card from "../ui/Card";
 import {pencil, trash, colorPalette, menu, add} from "ionicons/icons";
 import ColoredRadio from "../ui/ColoredRadio";
@@ -24,21 +25,22 @@ import {API_URL} from "../../lib/constants";
 
 interface CategoryCardProps {
   category: Category,
-  nbNotes: number,
+  update: () => void,
+  openToast: (string) => void,
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast }) => {
   const [popoverState, setPopoverState] = useState({ isOpen: false, event: undefined });
   const [isEditAlertOpen, setEditAlertOpen] = useState(false);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   let message: string;
-  if (nbNotes == 0)
+  if (category.nbNotes == 0)
     message = 'Aucune note';
-  else if (nbNotes == 1)
+  else if (category.nbNotes == 1)
     message = '1 note';
   else
-    message = nbNotes + ' notes';
+    message = category.nbNotes + ' notes';
 
   return (
     <Card
@@ -49,7 +51,13 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes }) => {
         <div className="flex flex-row justify-between">
           <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{category.name}</h2>
           <div className="flex flex-row justify-end items-center">
-            <IonButton color="dark" fill="clear">
+            <IonButton color="dark" fill="clear"
+              onClick={() => {
+                axios
+                  .put(`${API_URL}categories`, { id: category.id, color: nextColor(category.color)})
+                  .then(update)
+              }}
+            >
               <IonIcon icon={colorPalette} />
             </IonButton>
             <IonButton color="dark" fill="clear"
@@ -106,7 +114,11 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes }) => {
                 },
                 {
                   text: 'Ok',
-                  handler: () => { console.log('Updating category'); }
+                  handler: (data) => {
+                    axios
+                      .put(`${API_URL}categories`, { id: category.id, name: data.title})
+                      .then(update)
+                  }
                 },
               ]}
             />
@@ -114,7 +126,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes }) => {
               isOpen={isDeleteAlertOpen}
               onDidDismiss={() => setDeleteAlertOpen(false)}
               header={`Supprimer "${category.name}" ?`}
-              message="Les notes ne seront pas supprimées"
               buttons={[
                 {
                   text: 'Annuler',
@@ -123,7 +134,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes }) => {
                 },
                 {
                   text: 'Ok',
-                  handler: () => { console.log('Updating category'); }
+                  handler: () => {
+                    axios.delete(`${API_URL}categories/${category.id}`)
+                      .then(update)
+                      .catch(error => {
+                        if (error.response.status === 409)
+                          openToast(`La catégorie contient ${error.response.data.nbNotes} notes. Supprimez les notes puis réessayez.`)
+                      })
+                  }
                 },
               ]}
             />
@@ -160,25 +178,36 @@ const colors: string[] = [
   '#420ea4',
 ];
 
+const nextColor = (color: string) => {
+  const index = colors.findIndex(it => it == color);
+  const nbColors = colors.length;
+  if (index > -1)
+    return colors[(index + 1)%nbColors]
+  else
+    return colors[Math.floor(Math.random() * 100) % nbColors]
+}
+
 const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
-  const { state } = useContext(AppContext);
-  const [ categories, setCategories ] = useState<Category[]>([])
+  const { state, dispatch } = useContext(AppContext);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newCategoryName, setNewCategoryName ] = useState('');
-  // const [ newCategoryColor, setNewCaregoryColor ] = useState('#ffffff');
+  const [ newCategoryColor, setNewCaregoryColor ] = useState('');
+  const [isToastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  useIonViewDidEnter(() => {
+  const fetchCategories = () => {
     axios
       .get(API_URL + 'categories')
       .then((res) => {
-        setCategories(res.data)
+        dispatch(setCategories(res.data))
       })
       .catch(error => {
-        if (error.response.status === 401) {
+        if (error.response.status === 401)
           history.push('/login')
-        }
       })
-  })
+  }
+
+  useIonViewDidEnter(fetchCategories)
 
   return (
     <IonPage>
@@ -188,9 +217,21 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        { categories.map(category => {
-          const nbNotes = state.notes.filter(it => it.category.id === category.id).length;
-          return <CategoryCard key={category.color} category={category} nbNotes={nbNotes} />
+        { state.categories.sort((a, b) => {
+          if (a.name < b.name)
+            return false;
+          else
+            return true;
+        }).map(category => {
+          return <CategoryCard
+            key={category.id}
+            category={category}
+            update={fetchCategories}
+            openToast={(message: string) => {
+              setToastMessage(message);
+              setToastOpen(true);
+            }}
+          />
         })}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setModalOpen(true)}>
@@ -214,14 +255,33 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
               />
             </IonItem>
             <div className="flex flex-row justify-evenly w-full py-4">
-              { colors.map(color => <ColoredRadio key={color} name="new-category-color" color={color} />) }
+              { colors.map(color => <ColoredRadio key={color} name="new-category-color" color={color} trigger={setNewCaregoryColor} />) }
             </div>
             <div className="flex flex-col mt-2">
-              <IonButton onClick={() => setModalOpen(false)}>Créer</IonButton>
+              <IonButton onClick={() => {
+                if (newCategoryName == '' || newCategoryColor == '')
+                  return
+                axios
+                  .post(`${API_URL}categories`, {
+                    name: newCategoryName,
+                    color: newCategoryColor
+                  })
+                  .then((res) => {
+                    fetchCategories()
+                    setModalOpen(false)
+                  })
+              }}>Créer</IonButton>
               <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
             </div>
           </form>
         </IonModal>
+        <IonToast
+          isOpen={isToastOpen}
+          message={toastMessage}
+          duration={3000}
+          color="danger"
+          onDidDismiss={() => setToastOpen(false)}
+        />
       </IonContent>
     </IonPage>
   )

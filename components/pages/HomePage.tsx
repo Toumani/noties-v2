@@ -1,7 +1,5 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useState} from "react";
 import {RouteComponentProps} from "react-router";
-
-import Image from "next/image";
 
 import {
   useIonViewDidEnter,
