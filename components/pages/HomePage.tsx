@@ -11,16 +11,21 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption
+  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption, IonAlert, IonToast
 } from "@ionic/react";
 
 import {AppContext, setCategories, setNotes} from '../../store/State';
 import Card from '../ui/Card';
-import {add} from "ionicons/icons";
+import {add, trash} from "ionicons/icons";
 import axios from "axios";
 import {API_URL, BASE_URL} from "../../lib/constants";
 
-const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbElement, author, history }) => {
+const NoteCard = ({ note, history, update, openToast }) => {
+  const { id, title, nbElementDone, nbElement, author } = note;
+  const categoryName = note.category.name;
+  const categoryColor = note.category.color;
+  const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
+
   const nbElementRemaining = nbElement - nbElementDone;
   let message: string;
   if (nbElement == 0)
@@ -38,8 +43,22 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
       onClick={() => history.push(`/tabs/notes/${id}`)}
     >
       <div className="px-4 py-4 bg-white rounded-b-xl dark:bg-gray-900">
-        <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4>
-        <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{title}</h2>
+        <div className="flex row justify-between">
+          <div className="w-9/12">
+            <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4>
+            <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{title}</h2>
+          </div>
+          <div className="w-2/12">
+            <IonButton color="danger" fill="clear"
+             onClick={(e) => {
+               e.stopPropagation()
+               setDeleteAlertOpen(true)
+             }}
+            >
+              <IonIcon icon={trash} />
+            </IonButton>
+          </div>
+        </div>
         <div className="flex w-full h-3 my-4 bg-gray-400 rounded-full">
           <div
             className="h-full rounded-full"
@@ -59,6 +78,30 @@ const NoteCard = ({ id, title, categoryName, categoryColor, nbElementDone, nbEle
           <h3 className="text-gray-500 dark:text-gray-200 m-l-8 text-sm font-medium">{author}</h3>
         </div>
       </div>
+      <IonAlert
+        isOpen={isDeleteAlertOpen}
+        onDidDismiss={() => setDeleteAlertOpen(false)}
+        header={`Supprimer "${title}" ?`}
+        message="Cette action est irréversible !"
+        buttons={[
+          {
+            text: 'Annuler',
+            role: 'cancel',
+            cssClass: 'secondary',
+          },
+          {
+            text: 'Ok',
+            handler: () => {
+              axios.delete(`${API_URL}notes/${id}`)
+                .then(() => {
+                  update()
+                  openToast("Note supprimée")
+                })
+                .catch(() => openToast('Une erreur est survenue. Réessayez plus tard.'))
+            }
+          },
+        ]}
+      />
     </Card>
   )
 }
@@ -68,6 +111,8 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
   const [ newNoteCategoryId, setNewNoteCategoryId ] = useState(-1);
+  const [ isToastOpen, setToastOpen ] = useState(false);
+  const [ toastMessage, setToastMessage ] = useState('');
 
   const fetchNotes = () => {
     axios
@@ -96,14 +141,13 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         { state.notes && state.notes.map(note => (
           <NoteCard
             key={note.id}
-            id={note.id}
-            title={note.title}
-            categoryName={note.category.name}
-            categoryColor={note.category.color}
-            nbElementDone={note.nbElementDone}
-            nbElement={note.nbElement}
-            author={note.author}
+            note={note}
             history={history}
+            update={fetchNotes}
+            openToast={() => {
+              setToastMessage('Note supprimée')
+              setToastOpen(true)
+            }}
           />
         ))}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
@@ -166,6 +210,13 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             </div>
           </div>
         </IonModal>
+        <IonToast
+          isOpen={isToastOpen}
+          message={toastMessage}
+          duration={3000}
+          color="success"
+          onDidDismiss={() => setToastOpen(false)}
+        />
       </IonContent>
     </IonPage>
   )

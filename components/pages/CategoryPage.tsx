@@ -192,8 +192,8 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newCategoryName, setNewCategoryName ] = useState('');
   const [ newCategoryColor, setNewCaregoryColor ] = useState('');
-  const [isToastOpen, setToastOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [ isToastOpen, setToastOpen ] = useState(false);
+  const [ toastMessage, setToastMessage ] = useState('');
 
   const fetchCategories = () => {
     axios

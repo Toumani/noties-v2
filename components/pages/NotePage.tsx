@@ -96,8 +96,6 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const [ isAlertOpen, setAlertOpen ] = useState(false);
   const [ tasks, setTasks ] = useState<Task[]>([])
 
-  const note: NoteWithCategory = state.notes.find(n => n.id === parseInt(noteId));
-
   useIonViewDidEnter(() => {
     axios.get( `${API_URL}tasks/${noteId}`)
       .then(res => {
@@ -109,6 +107,12 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         }
       })
   })
+
+  const note: NoteWithCategory = state.notes.find(n => n.id === parseInt(noteId));
+  if (typeof note === "undefined") {
+    history.push('/')
+    return <div></div>
+  }
 
   return (
     <IonPage>

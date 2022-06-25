@@ -1,9 +1,9 @@
 import type {NextApiRequest, NextApiResponse} from 'next'
 import {PrismaClient} from '@prisma/client'
 import {withIronSessionApiRoute} from 'iron-session/next'
-import {sessionOptions} from "../../lib/session";
-import {cors} from "../../lib/init-middleware";
-import {bypassAuth} from '../../lib/constants';
+import {sessionOptions} from "../../../lib/session";
+import {cors} from "../../../lib/init-middleware";
+import {bypassAuth} from '../../../lib/constants';
 
 const prisma = new PrismaClient()
 
