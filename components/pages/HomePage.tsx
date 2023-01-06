@@ -1,5 +1,6 @@
-import React, {useContext, useState} from "react";
+import React, {useCallback, useContext, useEffect, useState} from "react";
 import {RouteComponentProps} from "react-router";
+import {useLocation} from "react-router-dom";
 
 import {
   useIonViewDidEnter,
@@ -11,14 +12,23 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption, IonAlert, IonToast
+  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption, IonAlert, IonToast, IonChip
 } from "@ionic/react";
 
 import {AppContext, setCategories, setNotes} from '../../store/State';
 import Card from '../ui/Card';
-import {add, trash} from "ionicons/icons";
+import {add, trash, close} from "ionicons/icons";
 import axios from "axios";
 import {API_URL, BASE_URL} from "../../lib/constants";
+import {Category} from "../../pages/api/categories";
+
+// A custom hook that builds on useLocation to parse
+// the query string for you.
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 
 const NoteCard = ({ note, history, update, openToast }) => {
   const { id, title, nbElementDone, nbElement, author } = note;
@@ -108,15 +118,35 @@ const NoteCard = ({ note, history, update, openToast }) => {
 
 const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state, dispatch } = useContext(AppContext);
+  const [ categoryName, setCategoryName ] = useState<string | null>(null);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
   const [ newNoteCategoryId, setNewNoteCategoryId ] = useState(-1);
   const [ isToastOpen, setToastOpen ] = useState(false);
   const [ toastMessage, setToastMessage ] = useState('');
 
-  const fetchNotes = () => {
+  const query = useQuery();
+  const categoryId = query.get("categoryId");
+
+  const fetchNotes = useCallback(() => {
+    let queryParameter = '';
+    if (categoryId) {
+      axios
+        .get(API_URL + `categories/${categoryId}`)
+        .then(response => {
+          setCategoryName((response.data as Category).name)
+        })
+        .catch(error => {
+          setCategoryName(null);
+          setToastMessage('Erreur lors du chargement de la catégorie');
+          setToastOpen(true);
+        })
+      queryParameter = `?categoryId=${categoryId}`;
+    }
+    else
+      setCategoryName(null);
     axios
-      .get(API_URL + 'notes')
+      .get(API_URL + `notes${queryParameter}`)
       .then((res) => {
         if (res.data.success)
           dispatch(setNotes(res.data.data))
@@ -126,9 +156,9 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           history.push('/login')
         }
       })
-  };
+  }, [query]);
 
-  useIonViewDidEnter(fetchNotes)
+  useEffect(fetchNotes, [query]);
 
   return (
     <IonPage>
@@ -138,6 +168,14 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
+        { categoryName &&
+          <IonChip onClick={() => {
+            history.push('/tabs/notes');
+          }}>
+            <IonLabel>{ categoryName }</IonLabel>
+            <IonIcon icon={close} color="danger"></IonIcon>
+          </IonChip>
+        }
         { state.notes && state.notes.map(note => (
           <NoteCard
             key={note.id}

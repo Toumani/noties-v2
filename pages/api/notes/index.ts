@@ -36,7 +36,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     })
   switch (req.method) {
     case 'GET':
-      return getNotesWithCategory()
+      const categoryId =  isNaN(parseInt(req.query.categoryId as string)) ? undefined : parseInt(req.query.categoryId as string)
+      return getNotesWithCategory(categoryId)
         .then(async response => {
           return res.status(200).json({
             data: response,
@@ -63,15 +64,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function getNotesWithCategory() {
+async function getNotesWithCategory(categoryId?: number) {
   return (await prisma.note.findMany({
+    where: {
+      category_id: categoryId
+    },
     include: {
       category: true,
     },
     orderBy: {
       created: 'desc',
     },
-    take: 10,
+    take: categoryId ? undefined : 10,
   })).map(it => ({
     id: it.id,
     created: new Date(),

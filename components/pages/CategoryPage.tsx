@@ -26,10 +26,11 @@ import {API_URL} from "../../lib/constants";
 interface CategoryCardProps {
   category: Category,
   update: () => void,
+  history: RouteComponentProps,
   openToast: (string) => void,
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast, history }) => {
   const [popoverState, setPopoverState] = useState({ isOpen: false, event: undefined });
   const [isEditAlertOpen, setEditAlertOpen] = useState(false);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -44,7 +45,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
 
   return (
     <Card
-      className="mx-auto my-4"
+      className="mx-auto my-4 cursor-pointer"
+      onClick={() => history.push(`/tabs/notes?categoryId=${category.id}`)}
     >
       <div className="h-2 rounded-t-full" style={{ backgroundColor: category.color }}></div>
       <div className="px-4 py-4 bg-white rounded-b-xl dark:bg-gray-900">
@@ -227,6 +229,7 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
             key={category.id}
             category={category}
             update={fetchCategories}
+            history={history}
             openToast={(message: string) => {
               setToastMessage(message);
               setToastOpen(true);

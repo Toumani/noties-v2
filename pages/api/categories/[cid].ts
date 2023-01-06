@@ -4,6 +4,7 @@ import {PrismaClient} from "@prisma/client";
 import {NextApiRequest, NextApiResponse} from "next";
 import {cors} from "../../../lib/init-middleware";
 import {bypassAuth} from "../../../lib/constants";
+import {Category} from "./index";
 
 const prisma = new PrismaClient()
 
@@ -16,6 +17,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const categoryId = parseInt(req.query.cid as string);
 
   switch (req.method) {
+    case 'GET':
+      return getCategory(categoryId)
+        .then(response => res.status(200).json(response))
+        .finally(async () => { await prisma.$disconnect() });
     case 'DELETE':
       return deleteCategory(categoryId)
         .then(response => {
@@ -32,6 +37,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+async function getCategory(categoryId: number): Promise<Category> {
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+    include: { _count: true }
+  });
+  return {
+    id: categoryId,
+    name: category.name,
+    color: category.color,
+    nbNotes: category._count.note
+  }
+}
 async function deleteCategory(categoryId: number) {
   const nbNotes = await prisma.note.count({
     where: { category_id: categoryId }
