@@ -3,7 +3,6 @@ import React, {createContext, useReducer} from "react";
 let AppContext = createContext();
 
 const initialState = {
-  user: null,
   notes: [],
   categories: []
 }
@@ -42,6 +41,7 @@ export const logOut = () => {
 let reducer = (state, action) => {
   switch (action.type) {
     case 'SET_USER':
+      localStorage.setItem('persistedState', JSON.stringify({ user: action.user }))
       return {
         ...state,
         user: action.user,
