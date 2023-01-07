@@ -22,13 +22,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         .then(async (result) => {
           req.session.user = { username: result.username }
           await req.session.save()
-          res.status(200).json({
-            data: 'eyaa;dkfajei', // jwt goes here
-            success: true,
-            reason: null,
-          })
+          res.status(200).json({ username: result.username })
         })
-        .catch(error => {
+        .catch(() => {
           res.status(401).json({
             data: null,
             success: false,

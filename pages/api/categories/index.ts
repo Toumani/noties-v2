@@ -21,9 +21,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const newCategory = req.body;
   if (!req.session.user && !bypassAuth)
     return res.status(401).json({ message: 'unauthorised' });
+  const username = req.session.user.username;
   switch (req.method) {
     case 'GET':
-      return getCategories()
+      return getCategories(username)
         .then(response => {
           return res.status(200).json(response)
         })
@@ -34,7 +35,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           await prisma.$disconnect()
         })
     case 'POST':
-      return createCategories(newCategory)
+      return createCategories(username, newCategory)
         .then(response => {
           return res.status(201).json(response)
         })
@@ -45,7 +46,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           await prisma.$disconnect()
         })
     case 'PUT':
-      return updateCategories(newCategory)
+      return updateCategories(username, newCategory)
         .then(response => {
           return res.status(201).json(response)
         })
@@ -60,8 +61,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function getCategories() {
+async function getCategories(username: string) {
   return (await prisma.category.findMany({
+    where: { author_id: username },
     include: { _count: true }
   })).map(it => ({
     id: it.id,
@@ -71,15 +73,15 @@ async function getCategories() {
   }));
 }
 
-async function createCategories(category: Category) {
+async function createCategories(username: string, category: Category) {
   return await prisma.category.create({
-    data: { name: category.name, color: category.color }
+    data: { name: category.name, color: category.color, author_id: username }
   })
 }
 
-async function updateCategories(category: Category) {
-  return await prisma.category.update({
-    where: { id: category.id },
+async function updateCategories(username: string, category: Category) {
+  return await prisma.category.updateMany({
+    where: { id: category.id, author_id: username },
     data: { name: category.name, color: category.color }
   })
 }

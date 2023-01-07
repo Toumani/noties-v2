@@ -37,7 +37,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'GET':
       const categoryId =  isNaN(parseInt(req.query.categoryId as string)) ? undefined : parseInt(req.query.categoryId as string)
-      return getNotesWithCategory(categoryId)
+      return getNotesWithCategory(req.session.user.username, categoryId)
         .then(async response => {
           return res.status(200).json({
             data: response,
@@ -52,7 +52,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           await prisma.$disconnect()
         })
     case 'POST':
-      return createNote(req.body)
+      return createNote(req.session.user.username, req.body)
         .then(response => {
           return res.status(201).json(response)
         })
@@ -64,10 +64,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function getNotesWithCategory(categoryId?: number) {
+async function getNotesWithCategory(username: string, categoryId?: number) {
   return (await prisma.note.findMany({
     where: {
-      category_id: categoryId
+      category_id: categoryId,
+      author_id: username,
     },
     include: {
       category: true,
@@ -83,11 +84,11 @@ async function getNotesWithCategory(categoryId?: number) {
     category: it.category,
     nbElementDone: it.nbDone,
     nbElement: it.nbTotal,
-    author: 'Kenza'
+    author: username
   }))
 }
 
-async function createNote(note: Note) {
+async function createNote(username: string, note: Note) {
   return await prisma.note.create({
     data: {
       id: undefined,
@@ -95,7 +96,8 @@ async function createNote(note: Note) {
       title: note.title,
       category_id: note.categoryId,
       nbDone: 0,
-      nbTotal: 0
+      nbTotal: 0,
+      author_id: username,
     }
   })
 }

@@ -1,14 +1,16 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {RouteComponentProps} from "react-router";
 import {IonContent, IonPage} from "@ionic/react";
 import Image from "next/image";
 import axios from "axios";
 import YellowCoverSvg from '../ui/YellowCoverSvg'
 import {API_URL} from "../../lib/constants";
+import {AppContext, setUser} from "../../store/State";
 
 
 
 const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
+  const { dispatch } = useContext(AppContext);
   const [coverExpanded, setCoverExpanded] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -46,14 +48,15 @@ const LoginPage: React.FC<RouteComponentProps> = ({ history }) => {
                   username, password
                 })
                 .then(res => {
+                    dispatch(setUser(res.data))
                     setMessage('')
                     setCoverExpanded(true)
                     setTimeout(() => {
                       setCoverExpanded(false)
                       history.push('/tabs')
-                    }, 3000)
+                    }, 1000)
                 })
-                .catch(error => setMessage('Nom d\'utilisateur et/ou mdp incorrect'))
+                .catch(() => setMessage('Nom d\'utilisateur et/ou mdp incorrect'))
             }}
           >Connexion</button>
           <p className="text-red-600">{ message }</p>

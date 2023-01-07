@@ -14,15 +14,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   await cors(req, res);
   if (!req.session.user && !bypassAuth)
     return res.status(401).json('unauthorised')
+  const username = req.session.user.username;
   const categoryId = parseInt(req.query.cid as string);
 
   switch (req.method) {
     case 'GET':
-      return getCategory(categoryId)
+      return getCategory(username, categoryId)
         .then(response => res.status(200).json(response))
         .finally(async () => { await prisma.$disconnect() });
     case 'DELETE':
-      return deleteCategory(categoryId)
+      return deleteCategory(username, categoryId)
         .then(response => {
           if (response.deleted)
             return res.status(200).json(response)
@@ -37,9 +38,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function getCategory(categoryId: number): Promise<Category> {
-  const category = await prisma.category.findUnique({
-    where: { id: categoryId },
+async function getCategory(username: string, categoryId: number): Promise<Category> {
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId, author_id: username },
     include: { _count: true }
   });
   return {
@@ -49,9 +50,9 @@ async function getCategory(categoryId: number): Promise<Category> {
     nbNotes: category._count.note
   }
 }
-async function deleteCategory(categoryId: number) {
+async function deleteCategory(username: string, categoryId: number) {
   const nbNotes = await prisma.note.count({
-    where: { category_id: categoryId }
+    where: { category_id: categoryId, author_id: username }
   })
   if (nbNotes > 0)
     return { deleted: false, nbNotes }

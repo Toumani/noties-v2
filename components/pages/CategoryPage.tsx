@@ -54,7 +54,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
           <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{category.name}</h2>
           <div className="flex flex-row justify-end items-center">
             <IonButton color="dark" fill="clear"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 axios
                   .put(`${API_URL}categories`, { id: category.id, color: nextColor(category.color)})
                   .then(update)
@@ -64,6 +65,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
             </IonButton>
             <IonButton color="dark" fill="clear"
               onClick={(e) => {
+                e.stopPropagation();
                 e.persist();
                 setPopoverState({isOpen: true, event: e})
               }}
@@ -77,7 +79,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
             >
               <IonContent>
                 <IonList>
-                  <IonItem onClick={() => {
+                  <IonItem onClick={(e) => {
+                    e.stopPropagation();
                     setPopoverState({ isOpen: false, event: undefined })
                     setEditAlertOpen(true);
                   }}>
@@ -86,7 +89,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
                   </IonItem>
                   <IonItem
                     color="danger"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setPopoverState({ isOpen: false, event: undefined })
                       setDeleteAlertOpen(true);
                     }}
@@ -269,7 +273,7 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
                     name: newCategoryName,
                     color: newCategoryColor
                   })
-                  .then((res) => {
+                  .then(() => {
                     fetchCategories()
                     setModalOpen(false)
                   })

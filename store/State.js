@@ -3,10 +3,7 @@ import React, {createContext, useReducer} from "react";
 let AppContext = createContext();
 
 const initialState = {
-  // mock
-  user: {
-    name: 'Kenza'
-  },
+  user: null,
   notes: [],
   categories: []
 }
@@ -29,8 +26,26 @@ export const setCategories = (categories) => {
   }
 }
 
+export const setUser = user => {
+  return {
+    type: 'SET_USER',
+    user,
+  }
+}
+
+export const logOut = () => {
+  return {
+    type: 'LOG_OUT'
+  }
+}
+
 let reducer = (state, action) => {
   switch (action.type) {
+    case 'SET_USER':
+      return {
+        ...state,
+        user: action.user,
+      }
     case 'SET_NOTES':
       return {
         ...state,
@@ -41,6 +56,10 @@ let reducer = (state, action) => {
         ...state,
         categories: action.categories
       }
+    case 'LOG_OUT':
+      if (typeof window !== "undefined")
+        window.localStorage.removeItem('persistedState');
+      return initialState;
     default: return state;
   }
 }

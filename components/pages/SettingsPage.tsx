@@ -1,6 +1,5 @@
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {RouteComponentProps} from "react-router";
-import Image from "next/image";
 import {
   IonPage,
   IonHeader,
@@ -12,6 +11,7 @@ import {
   IonLabel, IonCheckbox, IonItemDivider, IonIcon, IonButton,
 } from '@ionic/react';
 import { logOut } from 'ionicons/icons';
+import { logOut as doLogOut } from '../../store/State';
 
 import { AppContext } from '../../store/State';
 import axios from "axios";
@@ -83,7 +83,12 @@ const AvatarHolderSvg = () => {
 }
 
 const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
-  const { state } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
+
+  useEffect(() => {
+    if (!state.user)
+      history.push('/login');
+  });
 
   return (
     <IonPage>
@@ -95,7 +100,7 @@ const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
       <IonContent className="ion-padding">
         <div className="w-full h-full p-4" slot="fixed">
           <div className="relative w-32 h-32 m-auto">
-            <img className="rounded-full" src={`${BASE_URL}img/${state.user.name}.jpg`} alt={state.user.name} />
+            { state.user && <img className="rounded-full" src={`${BASE_URL}img/${state.user.username}.jpg`} alt={state.user.name} /> }
           </div>
           <div className="flex flex-col" style={{ minHeight: 'calc(100% - 7rem)', transform: 'translateY(-3rem)' }}>
             <div className="flex" style={{ height: '63px' }}>
@@ -124,12 +129,10 @@ const SettingsPage: React.FC<RouteComponentProps> = ({ history }) => {
                 </IonItem>
               </IonList>
               <div className="flex flex-col px-2">
-                  <IonButton color="danger" onClick={e => {
+                  <IonButton color="danger" onClick={() => {
                     axios
                       .get(API_URL + 'logout')
-                      .then(() => {
-                        history.push('/login')
-                      })
+                      .then(() => dispatch(doLogOut()));
                   }}>
                     Déconnexion
                     <IonIcon slot="end" icon={logOut}></IonIcon>

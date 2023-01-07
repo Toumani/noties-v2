@@ -3,7 +3,6 @@ import {RouteComponentProps} from "react-router";
 import {useLocation} from "react-router-dom";
 
 import {
-  useIonViewDidEnter,
   IonContent,
   IonHeader,
   IonToolbar,
@@ -136,7 +135,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
         .then(response => {
           setCategoryName((response.data as Category).name)
         })
-        .catch(error => {
+        .catch(() => {
           setCategoryName(null);
           setToastMessage('Erreur lors du chargement de la catégorie');
           setToastOpen(true);
@@ -158,7 +157,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
       })
   }, [query]);
 
-  useEffect(fetchNotes, [query]);
+  useEffect(fetchNotes, [query, match]);
 
   return (
     <IonPage>
@@ -237,7 +236,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
                     title: newNoteTitle,
                     categoryId: newNoteCategoryId
                   })
-                  .then((res) => {
+                  .then(() => {
                     setNewNoteCategoryId(-1);
                     setNewNoteTitle('');
                     fetchNotes();

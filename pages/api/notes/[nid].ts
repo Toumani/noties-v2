@@ -17,7 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const noteId = parseInt(req.query.nid as string)
   switch (req.method) {
     case 'DELETE':
-      return deleteNote(noteId)
+      return deleteNote(req.session.user.username, noteId)
         .then(() => res.status(200).json({ deleted: true}))
         .finally(async () => {
           await prisma.$disconnect()
@@ -27,8 +27,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-async function deleteNote(noteId: number) {
-  await prisma.note.delete({
-    where: { id: noteId }
+async function deleteNote(username: string, noteId: number) {
+  await prisma.note.deleteMany({
+    where: { id: noteId, author_id: username }
   })
 }
