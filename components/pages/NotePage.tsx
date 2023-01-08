@@ -8,7 +8,7 @@ import {
   IonContent, IonFab, IonFabButton,
   IonHeader, IonIcon, IonInput,
   IonItem, IonLabel,
-  IonList,
+  IonList, IonModal,
   IonPage,
   IonTitle,
   IonToolbar, useIonViewDidEnter
@@ -93,7 +93,8 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { params: { noteId } } = match
 
   const [ edit, setEdit ] = useState(false);
-  const [ isAlertOpen, setAlertOpen ] = useState(false);
+  const [ isModalOpen, setModalOpen ] = useState(false);
+  const [ newTaskTitle, setNewTaskTitle ] = useState('');
   const [ tasks, setTasks ] = useState<Task[]>([])
 
   useIonViewDidEnter(() => {
@@ -152,45 +153,44 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           )}
         </IonList>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => setAlertOpen(true)}>
+          <IonFabButton onClick={() => setModalOpen(true)}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
-        <IonAlert
-          isOpen={isAlertOpen}
-          onDidDismiss={() => setAlertOpen(false)}
-          header={"Nouvelle tâche"}
-          inputs={[
-            {
-              name: 'title',
-              type: 'text',
-              placeholder: taskNames[Math.round((Math.random()*100)%taskNames.length)]
-            }
-          ]}
-          buttons={[
-            {
-              text: 'Annuler',
-              role: 'cancel',
-              cssClass: 'secondary',
-            },
-            {
-              text: 'Ok',
-              handler: (data) => {
-                if (data.title != '')
-                  axios
-                    .post(API_URL + 'tasks', {
-                      title: data.title,
-                      done: false,
-                      index: 0, // index is not yet available
-                      noteId
-                    })
-                    .then((response) => {
-                      setTasks([...tasks, response.data])
-                    })
-              }
-            },
-          ]}
-        />
+        <IonModal
+          isOpen={isModalOpen}
+        >
+          <div className="flex flex-col justify-start">
+            <h3 className="mx-4 mt-4 text-2xl font-bold dark:text-gray-50">
+              Nouvelle tâche
+            </h3>
+            <IonItem>
+              <IonLabel position="stacked">Titre</IonLabel>
+              <IonInput
+                value={newTaskTitle}
+                onIonChange={e => setNewTaskTitle(e.detail.value)}
+                placeholder={taskNames[Math.round((Math.random()*100)%taskNames.length)]}
+              />
+            </IonItem>
+            <div className="flex flex-col mt-2">
+              <IonButton disabled={newTaskTitle == ''} onClick={() => {
+                axios
+                  .post(API_URL + 'tasks', {
+                    title: newTaskTitle,
+                    done: false,
+                    index: 0, // index is not yet available
+                    noteId
+                  })
+                  .then((response) => {
+                    setTasks([...tasks, response.data]);
+                    setModalOpen(false);
+                    setNewTaskTitle('');
+                  })
+              }}>Créer</IonButton>
+              <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
+            </div>
+          </div>
+        </IonModal>
       </IonContent>
     </IonPage>
     );

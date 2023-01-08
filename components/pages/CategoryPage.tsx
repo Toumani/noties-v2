@@ -32,7 +32,8 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast, history }) => {
   const [popoverState, setPopoverState] = useState({ isOpen: false, event: undefined });
-  const [isEditAlertOpen, setEditAlertOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [categoryNewName, setCategoryNewName] = useState('');
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   let message: string;
@@ -82,7 +83,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
                   <IonItem onClick={(e) => {
                     e.stopPropagation();
                     setPopoverState({ isOpen: false, event: undefined })
-                    setEditAlertOpen(true);
+                    setEditModalOpen(true);
                   }}>
                     <IonIcon icon={pencil} slot="start" />
                     <IonLabel>Modifier</IonLabel>
@@ -101,33 +102,39 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, update, openToast
                 </IonList>
               </IonContent>
             </IonPopover>
-            <IonAlert
-              isOpen={isEditAlertOpen}
-              onDidDismiss={() => setEditAlertOpen(false)}
-              header={"Nom de la catégorie"}
-              inputs={[
-                {
-                  name: 'title',
-                  type: 'text',
-                  value: category.name
-                }
-              ]}
-              buttons={[
-                {
-                  text: 'Annuler',
-                  role: 'cancel',
-                  cssClass: 'secondary',
-                },
-                {
-                  text: 'Ok',
-                  handler: (data) => {
+            <IonModal
+              isOpen={isEditModalOpen}
+              onDidPresent={() => setCategoryNewName(category.name)}
+            >
+              <div className="flex flex-col justify-start">
+                <h3 className="mx-4 mt-4 text-2xl font-bold dark:text-gray-50">
+                  Nom de la catégorie
+                </h3>
+                <IonItem>
+                  <IonLabel position="stacked">Nom</IonLabel>
+                  <IonInput
+                    value={categoryNewName}
+                    onIonChange={e => setCategoryNewName(e.detail.value)}
+                  />
+                </IonItem>
+                <div className="flex flex-col mt-2">
+                  <IonButton disabled={categoryNewName == ''} onClick={(e) => {
+                    e.stopPropagation();
                     axios
-                      .put(`${API_URL}categories`, { id: category.id, name: data.title})
-                      .then(update)
-                  }
-                },
-              ]}
-            />
+                      .put(`${API_URL}categories`, { id: category.id, name: categoryNewName})
+                      .then(() => {
+                        update();
+                        setEditModalOpen(false);
+                        setCategoryNewName('');
+                      });
+                  }}>Modifier</IonButton>
+                  <IonButton fill="clear" onClick={(e) => {
+                    e.stopPropagation();
+                    setEditModalOpen(false);
+                  }}>Annuler</IonButton>
+                </div>
+              </div>
+            </IonModal>
             <IonAlert
               isOpen={isDeleteAlertOpen}
               onDidDismiss={() => setDeleteAlertOpen(false)}
