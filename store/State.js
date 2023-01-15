@@ -1,4 +1,4 @@
-import React, {createContext, useReducer} from "react";
+import React, { createContext, useReducer } from "react";
 
 let AppContext = createContext();
 
@@ -17,6 +17,21 @@ export const setNotes = (notes) => {
     notes
   }
 }
+
+export const addCategory = (category) => ({
+  type: 'ADD_CATEGORY',
+  category
+});
+
+export const updateCategory = (category) => ({
+  type: 'UPDATE_CATEGORY',
+  category
+})
+
+export const deleteCategory = (category) => ({
+  type: 'DELETE_CATEGORY',
+  category
+});
 
 export const setCategories = (categories) => {
   return {
@@ -38,10 +53,10 @@ export const logOut = () => {
   }
 }
 
-let reducer = (state, action) => {
+const reducer = (state, action) => {
+  const categoriesUpdated = [];
   switch (action.type) {
     case 'SET_USER':
-      localStorage.setItem('persistedState', JSON.stringify({ user: action.user }))
       return {
         ...state,
         user: action.user,
@@ -51,17 +66,49 @@ let reducer = (state, action) => {
         ...state,
         notes: action.notes
       }
+    case 'ADD_CATEGORY':
+      state.categories.push(action.category);
+      return state;
+    case 'UPDATE_CATEGORY':
+      state.categories.forEach(it => {
+        if (it.id === action.category.id)
+          categoriesUpdated.push(action.category);
+        else
+          categoriesUpdated.push(it)
+      });
+      return {
+        ...state,
+        categories: categoriesUpdated
+      };
+    case 'DELETE_CATEGORY':
+      state.categories.forEach(it => {
+        if (it.id !== action.category.id) {
+          categoriesUpdated.push(it)
+        }
+      })
+      return {
+        ...state,
+        categories: categoriesUpdated
+      }
     case 'SET_CATEGORIES':
       return {
         ...state,
         categories: action.categories
       }
     case 'LOG_OUT':
-      if (typeof window !== "undefined")
-        window.localStorage.removeItem('persistedState');
-      return initialState;
+      return {
+        ...state,
+        user: undefined,
+      };
     default: return state;
   }
+}
+
+const persistedReducer = (state, action) => {
+  const newState = reducer(state, action);
+  if (typeof window !== 'undefined')
+    localStorage.setItem('persistedState', JSON.stringify(newState));
+  return newState;
 }
 
 function AppContextProvider(props) {
@@ -70,7 +117,7 @@ function AppContextProvider(props) {
     ...persistedState,
   }
 
-  let [state, dispatch] = useReducer(reducer, fullInitialState);
+  let [state, dispatch] = useReducer(persistedReducer, fullInitialState);
   let value = { state, dispatch };
 
   return (
