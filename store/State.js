@@ -57,24 +57,19 @@ const reducer = (state, action) => {
   const categoriesUpdated = [];
   const notesUpdated = [];
   switch (action.type) {
+    // Session
     case 'SET_USER':
       return {
         ...state,
         user: action.user,
       }
-    case 'ADD_NOTE':
-      state.notes.push(action.data);
-      return state;
-    case 'DELETE_NOTE':
+    case 'LOG_OUT':
       return {
         ...state,
-        notes: state.notes.filter(it => it.id !== action.data.id)
+        user: undefined,
       };
-    case 'SET_NOTES':
-      return {
-        ...state,
-        notes: action.notes
-      }
+
+    // Categories
     case 'ADD_CATEGORY':
       state.categories.push(action.category);
       return state;
@@ -104,11 +99,58 @@ const reducer = (state, action) => {
         ...state,
         categories: action.categories
       }
-    case 'LOG_OUT':
+
+    // Notes
+    case 'ADD_NOTE':
+      state.notes.push(action.data);
+      return state;
+    case 'DELETE_NOTE':
       return {
         ...state,
-        user: undefined,
+        notes: state.notes.filter(it => it.id !== action.data.id)
       };
+    case 'SET_NOTES':
+      return {
+        ...state,
+        notes: action.notes
+      }
+
+    // Task
+    case 'ADD_TASK':
+      state.notes.forEach(note => {
+        if (note.id === action.data.note.id)
+          note.tasks.push(action.data.task);
+        notesUpdated.push(note);
+      });
+      return {
+        ...state,
+        notes: notesUpdated
+      }
+    case 'UPDATE_TASK':
+      state.notes.forEach(note => {
+        if (note.id === action.data.note.id) {
+          const task = note.tasks.find(it => it.id === action.data.task.id);
+          task.title = action.data.task.title;
+          task.done = action.data.task.done;
+          task.index = action.data.task.index;
+        }
+        notesUpdated.push(note);
+      });
+      return {
+        ...state,
+        notes: notesUpdated
+      }
+    case 'DELETE_TASK':
+      state.notes.forEach(note => {
+        if (note.id === action.data.note.id)
+          note.tasks = note.tasks.filter(it => it.id !== action.data.task.id);
+        notesUpdated.push(note);
+      })
+      return {
+        ...state,
+        notes: notesUpdated
+      }
+
     default: return state;
   }
 }

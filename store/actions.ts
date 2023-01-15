@@ -1,4 +1,4 @@
-import { Note } from "../model";
+import {Note, Task} from "../model";
 
 interface Action {
 	type: string,
@@ -14,3 +14,18 @@ export const deleteNote = (note: Note): Action => ({
 	type: 'DELETE_NOTE',
 	data: note
 });
+
+export const addTask = (note: Note, task: Task) => ({
+	type: 'ADD_TASK',
+	data: { note, task }
+});
+
+export const updateTask = (note: Note, task: Task) => ({
+	type: 'UPDATE_TASK',
+	data: { note, task }
+});
+
+export const deleteTask = (note: Note, task: Task) => ({
+	type: 'DELETE_TASK',
+	data: { note, task }
+})

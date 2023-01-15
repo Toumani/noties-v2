@@ -1,8 +1,7 @@
-import React, {useContext, useState} from "react";
-import {RouteComponentProps} from "react-router";
-import {AppContext} from "../../store/State";
+import React, {useContext, useMemo, useState} from "react";
+import { RouteComponentProps } from "react-router";
+import { AppContext } from "../../store/State";
 import {
-  IonAlert,
   IonBackButton, IonButton,
   IonButtons, IonCheckbox,
   IonContent, IonFab, IonFabButton,
@@ -11,19 +10,17 @@ import {
   IonList, IonModal,
   IonPage,
   IonTitle,
-  IonToolbar, useIonViewDidEnter
+  IonToolbar
 } from "@ionic/react";
+import { v4 as uuid } from 'uuid';
 import { pencil, trash, checkmark, add } from 'ionicons/icons';
-import axios from "axios";
-import {NoteWithCategory} from "../../pages/api/notes";
-import {Task} from "../../pages/api/tasks/[nid]";
-import {API_URL} from "../../lib/constants";
+import { Category, Note, Task } from "../../model";
+import { addTask, deleteTask, updateTask } from "../../store/actions";
 
 interface TaskViewProps {
+  note: Note,
   task: Task,
-  edit: boolean,
-  onUpdate: (Task) => void,
-  onDelete: (number) => void
+  edit: boolean
 }
 
 const taskNames: string[] = [
@@ -45,43 +42,31 @@ const taskNames: string[] = [
   'Monter la vidéo de mariage',
 ]
 
-const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) => {
-  const { id, index, title, done } = task;
+const TaskView: React.FC<TaskViewProps> = ({ note, task, edit }) => {
+  const { dispatch } = useContext(AppContext);
+  const { index, title, done } = task;
   const [newTitle, setNewTitle] = useState(title)
   return (
     <IonItem key={index}>
       { edit ?
         <>
-          <IonInput value={newTitle} onIonChange={e => setNewTitle(e.detail.value)} onIonBlur={e => {
-            onUpdate({ id, done, title: newTitle })
-            axios
-              .put(API_URL + `tasks`, { ...task, title: newTitle })
-              .then((res) => onUpdate(res.data.result))
-              .catch(e => {
-                // TODO notify that something went wrong
-              })
-          }} />
-          <IonButton color="danger" onClick={e => {
-            axios
-              .delete(API_URL + 'tasks', {
-                data: task
-              })
-              .then((res) => onDelete(res.data.id))
-          }}>
+          <IonInput
+            value={newTitle}
+            onIonChange={e => setNewTitle(e.detail.value)}
+            onIonBlur={() => dispatch(updateTask(note, { ...task, title: newTitle }))}
+          />
+          <IonButton color="danger" onClick={() => dispatch(deleteTask(note, task))}>
             <IonIcon icon={trash} />
           </IonButton>
         </>
           :
         <>
           <IonLabel>{title}</IonLabel>
-          <IonCheckbox checked={done} slot="end" onIonChange={e => {
-            axios
-              .put(API_URL + `tasks`, { ...task, done: e.detail.checked })
-              .then((res) => onUpdate(res.data.result))
-              .catch(e => {
-                // TODO notify that something went wrong
-              })
-          }} />
+          <IonCheckbox
+            checked={done}
+            slot="end"
+            onIonChange={e => dispatch(updateTask(note, { ...task, done: e.detail.checked }))}
+          />
         </>
       }
     </IonItem>
@@ -89,28 +74,20 @@ const TaskView: React.FC<TaskViewProps> = ({ task, edit, onUpdate, onDelete }) =
 }
 
 const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
-  const { state } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
   const { params: { noteId } } = match
 
   const [ edit, setEdit ] = useState(false);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newTaskTitle, setNewTaskTitle ] = useState('');
-  const [ tasks, setTasks ] = useState<Task[]>([])
 
-  useIonViewDidEnter(() => {
-    axios.get( `${API_URL}tasks/${noteId}`)
-      .then(res => {
-        setTasks(res.data as Task[]);
-      })
-      .catch(error => {
-        if (error.response.status === 401) {
-          history.push('/login')
-        }
-      })
-  })
+  const { note, category } = useMemo(() => {
+    const note = (state.notes as Note[]).find(it => it.id === noteId);
+    const category = note ? (state.categories as Category[]).find(it => it.id === note.categoryId) : undefined;
+    return { note, category }
+  }, [match]);
 
-  const note: NoteWithCategory = state.notes.find(n => n.id === parseInt(noteId));
-  if (typeof note === "undefined") {
+  if (typeof note === "undefined" || typeof category === 'undefined') {
     history.push('/')
     return <div></div>
   }
@@ -122,7 +99,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/tabs/notes" />
           </IonButtons>
-          <IonTitle>{ note.category.name }</IonTitle>
+          <IonTitle>{ category.name }</IonTitle>
           <IonButtons slot="end">
             <IonButton color={edit ? "success" : "default"} onClick={() => setEdit(!edit)}>
               <IonIcon icon={edit ? checkmark : pencil} />
@@ -135,20 +112,12 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           { note.title }
         </h1>
         <IonList>
-          { tasks.sort((a, b) => a.index - b.index).map((task) =>
+          { note.tasks.sort((a, b) => a.index - b.index).map((task) =>
             <TaskView
               key={task.id}
+              note={note}
               task={task}
               edit={edit}
-              onUpdate={(updatedTask) => {
-                const task = tasks.filter(it => it.id == updatedTask.id)[0];
-                task.title = updatedTask.title;
-                task.done = updatedTask.done;
-              }}
-              onDelete={(id) => {
-                const updatedTasks = tasks.filter(it => it.id != id);
-                setTasks(updatedTasks);
-              }}
             />
           )}
         </IonList>
@@ -174,18 +143,9 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             </IonItem>
             <div className="flex flex-col mt-2">
               <IonButton disabled={newTaskTitle == ''} onClick={() => {
-                axios
-                  .post(API_URL + 'tasks', {
-                    title: newTaskTitle,
-                    done: false,
-                    index: 0, // index is not yet available
-                    noteId
-                  })
-                  .then((response) => {
-                    setTasks([...tasks, response.data]);
-                    setModalOpen(false);
-                    setNewTaskTitle('');
-                  })
+                dispatch(addTask(note, { id: uuid(), title: newTaskTitle, index: 0, done: false }));
+                setModalOpen(false);
+                setNewTaskTitle('');
               }}>Créer</IonButton>
               <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
             </div>
