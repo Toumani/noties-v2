@@ -47,8 +47,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, nbNotes, openToas
   return (
     <Card
       className="mx-auto my-4 cursor-pointer"
-      onClick={() => {/*history.push(`/tabs/notes?categoryId=${category.id}`)*/
-      }}
+      onClick={() => { history.push(`/tabs/notes?categoryId=${category.id}`) }}
     >
       <div className="h-2 rounded-t-full" style={{ backgroundColor: category.color }}></div>
       <div className="px-4 py-4 bg-white rounded-b-xl dark:bg-gray-900">

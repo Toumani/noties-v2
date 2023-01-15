@@ -1,6 +1,7 @@
-import React, {useCallback, useContext, useEffect, useState} from "react";
-import {RouteComponentProps} from "react-router";
-import {useLocation} from "react-router-dom";
+import React, { useContext, useMemo, useState } from "react";
+import { RouteComponentProps } from "react-router";
+import { useLocation } from "react-router-dom";
+import { v4 as uuid } from 'uuid';
 
 import {
   IonContent,
@@ -14,12 +15,11 @@ import {
   IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption, IonAlert, IonToast, IonChip
 } from "@ionic/react";
 
-import {AppContext, setCategories, setNotes} from '../../store/State';
+import { AppContext } from '../../store/State';
 import Card from '../ui/Card';
-import {add, trash, close} from "ionicons/icons";
-import axios from "axios";
-import {API_URL, BASE_URL} from "../../lib/constants";
-import {Category} from "../../pages/api/categories";
+import { add, trash, close } from "ionicons/icons";
+import { Category, Note } from "../../model";
+import { addNote, deleteNote } from "../../store/actions";
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -29,10 +29,14 @@ function useQuery() {
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const NoteCard = ({ note, history, update, openToast }) => {
-  const { id, title, nbElementDone, nbElement, author } = note;
-  const categoryName = note.category.name;
-  const categoryColor = note.category.color;
+const NoteCard = ({ note, history, openToast }) => {
+  const { state, dispatch } = useContext(AppContext);
+  const { id, title } = note;
+  const nbElement = note.tasks.length;
+  const nbElementDone = note.tasks.filter(it => it.done).length;
+  const category = state.categories.find(it => it.id === note.categoryId);
+  const categoryName = category.name;
+  const categoryColor = category.color;
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   const nbElementRemaining = nbElement - nbElementDone;
@@ -80,12 +84,6 @@ const NoteCard = ({ note, history, update, openToast }) => {
           ></div>
         </div>
         <p className="sm:text-sm text-s text-gray-500 mr-1 my-3 dark:text-gray-400">{message}</p>
-        <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 relative">
-            <img src={`${BASE_URL}img/${author}.jpg`} className="rounded-full" alt={author}/>
-          </div>
-          <h3 className="text-gray-500 dark:text-gray-200 m-l-8 text-sm font-medium">{author}</h3>
-        </div>
       </div>
       <IonAlert
         isOpen={isDeleteAlertOpen}
@@ -101,12 +99,8 @@ const NoteCard = ({ note, history, update, openToast }) => {
           {
             text: 'Ok',
             handler: () => {
-              axios.delete(`${API_URL}notes/${id}`)
-                .then(() => {
-                  update()
-                  openToast("Note supprimée")
-                })
-                .catch(() => openToast('Une erreur est survenue. Réessayez plus tard.'))
+              dispatch(deleteNote(note));
+              openToast("Note supprimée");
             }
           },
         ]}
@@ -117,47 +111,25 @@ const NoteCard = ({ note, history, update, openToast }) => {
 
 const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
   const { state, dispatch } = useContext(AppContext);
-  const [ categoryName, setCategoryName ] = useState<string | null>(null);
   const [ isModalOpen, setModalOpen ] = useState(false);
   const [ newNoteTitle, setNewNoteTitle ] = useState('');
-  const [ newNoteCategoryId, setNewNoteCategoryId ] = useState(-1);
+  const [ newNoteCategoryId, setNewNoteCategoryId ] = useState('');
   const [ isToastOpen, setToastOpen ] = useState(false);
   const [ toastMessage, setToastMessage ] = useState('');
 
   const query = useQuery();
   const categoryId = query.get("categoryId");
 
-  const fetchNotes = useCallback(() => {
-    let queryParameter = '';
+  const { displayedNotes, categoryName } = useMemo(() => {
     if (categoryId) {
-      axios
-        .get(API_URL + `categories/${categoryId}`)
-        .then(response => {
-          setCategoryName((response.data as Category).name)
-        })
-        .catch(() => {
-          setCategoryName(null);
-          setToastMessage('Erreur lors du chargement de la catégorie');
-          setToastOpen(true);
-        })
-      queryParameter = `?categoryId=${categoryId}`;
+      const displayedNotes = (state.notes as Note[]).filter(it => it.categoryId === categoryId);
+      const category = (state.categories as Category[]).find(it => it.id === categoryId);
+      const categoryName = category ? category.name : null;
+      return { displayedNotes, categoryName }
     }
     else
-      setCategoryName(null);
-    axios
-      .get(API_URL + `notes${queryParameter}`)
-      .then((res) => {
-        if (res.data.success)
-          dispatch(setNotes(res.data.data))
-      })
-      .catch(error => {
-        if (error.response.status === 401) {
-          history.push('/login')
-        }
-      })
-  }, [query]);
-
-  useEffect(fetchNotes, [query, match]);
+      return { displayedNotes: state.notes, categoryName: null };
+  }, [query, match]);
 
   return (
     <IonPage>
@@ -175,12 +147,11 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             <IonIcon icon={close} color="danger"></IonIcon>
           </IonChip>
         }
-        { state.notes && state.notes.map(note => (
+        { displayedNotes.map(note => (
           <NoteCard
             key={note.id}
             note={note}
             history={history}
-            update={fetchNotes}
             openToast={() => {
               setToastMessage('Note supprimée')
               setToastOpen(true)
@@ -188,19 +159,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           />
         ))}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => {
-            axios
-              .get(API_URL + 'categories')
-              .then((res) => {
-                  dispatch(setCategories(res.data))
-              })
-              .catch(error => {
-                if (error.response.status === 401) {
-                  history.push('/login')
-                }
-              })
-            setModalOpen(true);
-          }}>
+          <IonFabButton onClick={() => { setModalOpen(true) }}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
@@ -230,18 +189,17 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
               </IonSelect>
             </IonItem>
             <div className="flex flex-col mt-2">
-              <IonButton disabled={newNoteTitle == '' || newNoteCategoryId < 0} onClick={() => {
-                axios
-                  .post(API_URL + 'notes', {
-                    title: newNoteTitle,
-                    categoryId: newNoteCategoryId
-                  })
-                  .then(() => {
-                    setNewNoteCategoryId(-1);
-                    setNewNoteTitle('');
-                    fetchNotes();
-                    setModalOpen(false);
-                  })
+              <IonButton disabled={newNoteTitle === '' || newNoteCategoryId === ''} onClick={() => {
+                dispatch(addNote({
+                  id: uuid(),
+                  title: newNoteTitle,
+                  created: new Date(),
+                  categoryId: newNoteCategoryId,
+                  tasks: []
+                }));
+                setNewNoteCategoryId('');
+                setNewNoteTitle('');
+                setModalOpen(false);
               }}>Créer</IonButton>
               <IonButton fill="clear" onClick={() => setModalOpen(false)}>Annuler</IonButton>
             </div>

@@ -55,12 +55,21 @@ export const logOut = () => {
 
 const reducer = (state, action) => {
   const categoriesUpdated = [];
+  const notesUpdated = [];
   switch (action.type) {
     case 'SET_USER':
       return {
         ...state,
         user: action.user,
       }
+    case 'ADD_NOTE':
+      state.notes.push(action.data);
+      return state;
+    case 'DELETE_NOTE':
+      return {
+        ...state,
+        notes: state.notes.filter(it => it.id !== action.data.id)
+      };
     case 'SET_NOTES':
       return {
         ...state,
