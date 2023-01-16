@@ -20,6 +20,7 @@ import Card from '../ui/Card';
 import { add, trash, close } from "ionicons/icons";
 import { Category, Note } from "../../model";
 import { addNote, deleteNote } from "../../store/actions";
+import { defaultCategoryColor } from "./CategoryPage";
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -29,14 +30,25 @@ function useQuery() {
   return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const NoteCard = ({ note, history, openToast }) => {
+interface NoteCardProps {
+  note: Note,
+  history: RouteComponentProps,
+  openToast: (message: string) => void,
+}
+
+const NoteCard: React.FC<NoteCardProps> = ({ note, history, openToast }) => {
   const { state, dispatch } = useContext(AppContext);
   const { id, title } = note;
   const nbElement = note.tasks.length;
   const nbElementDone = note.tasks.filter(it => it.done).length;
-  const category = state.categories.find(it => it.id === note.categoryId);
-  const categoryName = category.name;
-  const categoryColor = category.color;
+  let category: Category | null = null;
+  if (note.categoryId)
+    category = state.categories.find(it => it.id === note.categoryId);
+  let categoryName: string | null = null, categoryColor : string | null = null;
+  if (category) {
+    categoryName = category.name;
+    categoryColor = category.color;
+  }
   const [isDeleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   const nbElementRemaining = nbElement - nbElementDone;
@@ -58,7 +70,7 @@ const NoteCard = ({ note, history, openToast }) => {
       <div className="px-4 py-4 bg-white rounded-b-xl dark:bg-gray-900">
         <div className="flex row justify-between">
           <div className="w-9/12">
-            <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4>
+            { categoryName && <h4 className="font-bold py-0 text-s uppercase" style={{ color: categoryColor }}>{categoryName}</h4> }
             <h2 className="font-bold text-2xl text-gray-800 dark:text-gray-100">{title}</h2>
           </div>
           <div className="w-2/12">
@@ -77,7 +89,7 @@ const NoteCard = ({ note, history, openToast }) => {
             className="h-full rounded-full"
             style={{
               width: (nbElement != 0 ? nbElementDone / nbElement * 100 : 0) + '%',
-              backgroundColor: categoryColor,
+              backgroundColor: categoryColor || defaultCategoryColor,
               transitionProperty: 'width',
               transitionDuration: '.4s',
             }}
@@ -129,7 +141,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
     }
     else
       return { displayedNotes: state.notes, categoryName: null };
-  }, [query, match]);
+  }, [query, match, state.notes]);
 
   return (
     <IonPage>
@@ -189,12 +201,12 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
               </IonSelect>
             </IonItem>
             <div className="flex flex-col mt-2">
-              <IonButton disabled={newNoteTitle === '' || newNoteCategoryId === ''} onClick={() => {
+              <IonButton disabled={newNoteTitle === ''} onClick={() => {
                 dispatch(addNote({
                   id: uuid(),
                   title: newNoteTitle,
                   created: new Date(),
-                  categoryId: newNoteCategoryId,
+                  categoryId: newNoteCategoryId === '' ? null : newNoteCategoryId,
                   tasks: []
                 }));
                 setNewNoteCategoryId('');

@@ -188,6 +188,8 @@ const colors: string[] = [
   '#420ea4',
 ];
 
+export const defaultCategoryColor = 'var(--ion-color-light)';
+
 const nextColor = (color: string): string => {
   const index = colors.findIndex(it => it == color);
   const nbColors = colors.length;

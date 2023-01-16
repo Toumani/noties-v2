@@ -8,7 +8,7 @@ export interface Note {
 	id: string,
 	created: Date,
 	title: string,
-	categoryId: string,
+	categoryId?: string,
 	tasks: Task[]
 }
 

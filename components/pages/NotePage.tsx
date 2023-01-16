@@ -83,11 +83,13 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
 
   const { note, category } = useMemo(() => {
     const note = (state.notes as Note[]).find(it => it.id === noteId);
-    const category = note ? (state.categories as Category[]).find(it => it.id === note.categoryId) : undefined;
+    let category: Category | null = null;
+    if (note && note.categoryId)
+      category = (state.categories as Category[]).find(it => it.id === note.categoryId);
     return { note, category }
   }, [match]);
 
-  if (typeof note === "undefined" || typeof category === 'undefined') {
+  if (typeof note === 'undefined' || typeof category === 'undefined') {
     history.push('/')
     return <div></div>
   }
@@ -99,7 +101,7 @@ const NotePage: React.FC<RouteComponentProps> = ({ match, history }) => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="/tabs/notes" />
           </IonButtons>
-          <IonTitle>{ category.name }</IonTitle>
+          <IonTitle>{ category ? category.name : 'Noties' }</IonTitle>
           <IonButtons slot="end">
             <IonButton color={edit ? "success" : "default"} onClick={() => setEdit(!edit)}>
               <IonIcon icon={edit ? checkmark : pencil} />
