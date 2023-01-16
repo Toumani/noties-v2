@@ -28,4 +28,10 @@ export const updateTask = (note: Note, task: Task) => ({
 export const deleteTask = (note: Note, task: Task) => ({
 	type: 'DELETE_TASK',
 	data: { note, task }
+});
+
+// Settings
+export const setDarkMode = (darkMode: boolean) => ({
+	type: 'SET_DARK_MODE',
+	data: darkMode
 })

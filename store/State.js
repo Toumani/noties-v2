@@ -4,7 +4,10 @@ let AppContext = createContext();
 
 const initialState = {
   notes: [],
-  categories: []
+  categories: [],
+  settings: {
+    darkMode: true,
+  },
 }
 
 let persistedState = {}
@@ -150,6 +153,16 @@ const reducer = (state, action) => {
         ...state,
         notes: notesUpdated
       }
+
+    // Settings
+    case 'SET_DARK_MODE':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          darkMode: action.data
+        }
+      };
 
     default: return state;
   }
