@@ -12,7 +12,16 @@ import {
   IonFab,
   IonFabButton,
   IonIcon,
-  IonModal, IonInput, IonSelect, IonButton, IonLabel, IonItem, IonSelectOption, IonAlert, IonToast, IonChip
+  IonModal,
+  IonInput,
+  IonSelect,
+  IonButton,
+  IonLabel,
+  IonItem,
+  IonSelectOption,
+  IonAlert,
+  IonToast,
+  IonChip,
 } from "@ionic/react";
 
 import { AppContext } from '../../store/State';
@@ -21,6 +30,7 @@ import { add, trash, close } from "ionicons/icons";
 import { Category, Note } from "../../model";
 import { addNote, deleteNote } from "../../store/actions";
 import { defaultCategoryColor } from "./CategoryPage";
+import EmptyListMessage from "../ui/EmptyListMessage";
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -170,7 +180,8 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
             }}
           />
         ))}
-        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        { state.notes.length === 0 && <EmptyListMessage h1="Aucune note" p="Cliquez sur le bouton + pour créer une nouvelle note" /> }
+        <IonFab className="right-8 bottom-8" vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => { setModalOpen(true) }}>
             <IonIcon icon={add} />
           </IonFabButton>
@@ -195,6 +206,7 @@ const HomePage: React.FC<RouteComponentProps> = ({ match, history }) => {
                 cancelText="Fermer"
                 onIonChange={e => setNewNoteCategoryId(e.detail.value)}
               >
+                <IonSelectOption key="" value="">-- Aucune category --</IonSelectOption>
                 { state.categories.map(category => (
                   <IonSelectOption key={category.id} value={category.id}>{ category.name }</IonSelectOption>
                 ))}

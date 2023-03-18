@@ -21,6 +21,7 @@ import Card from "../ui/Card";
 import { pencil, trash, colorPalette, menu, add } from "ionicons/icons";
 import ColoredRadio from "../ui/ColoredRadio";
 import { Category } from "../../model";
+import EmptyListMessage from "../ui/EmptyListMessage";
 
 interface CategoryCardProps {
   category: Category,
@@ -233,7 +234,8 @@ const CategoryPage: React.FC<RouteComponentProps> = ({ history }) => {
             }}
           />
         })}
-        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        { state.categories.length === 0 && <EmptyListMessage h1="Aucune catégorie" p="Cliquez sur le bouton + pour créer une catégorie" /> }
+        <IonFab className="right-8 bottom-8" vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setModalOpen(true)}>
             <IonIcon icon={add} />
           </IonFabButton>
