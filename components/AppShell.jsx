@@ -5,7 +5,6 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
 
 import Tabs from './pages/Tabs';
-import LoginPage from "./pages/LoginPage";
 import { useContext } from "react";
 import { AppContext } from "../store/State";
 
@@ -24,7 +23,6 @@ const AppShell = () => {
       <IonApp>
           <IonReactRouter>
             <IonRouterOutlet id="main" >
-              <Route path="/login" component={LoginPage} exact={true} />
               <Route path="/tabs" render={() => <Tabs />} />
               <Route exact path="/" render={() => <Redirect to="/tabs" />} />
             </IonRouterOutlet>
